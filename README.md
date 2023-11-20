@@ -1,1 +1,1 @@
-# RPGchess-2.0
+# RPGchess-1.0
