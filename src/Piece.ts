@@ -4,8 +4,7 @@ export class Piece {
     private side: Side;
     private type: Type;
     private initialSquare: [number, number];
-    private ranges: number[];
-    private directions: Direction[];
+    private attacks: [Direction, number][];
     private canLevelUp: Boolean;
     private captureMultiplier: number;
     private abilityCapacity: number;
@@ -19,8 +18,7 @@ export class Piece {
     constructor(side: Side = Side.NONE,
         type: Type = Type.EMPTY,
         initialSquare: [number, number] = [-1, -1],
-        ranges: number[] = [],
-        directions: Direction[] = [],
+        attacks: [Direction, number][] = [],
         canLevelUp: Boolean = false,
         captureMultiplier: number = 0,
         abilityCapacity: number = 0,
@@ -31,8 +29,7 @@ export class Piece {
         this.side = side;
         this.type = type;
         this.initialSquare = initialSquare;
-        this.ranges = ranges;
-        this.directions = directions;
+        this.attacks = attacks;
         this.canLevelUp = canLevelUp;
         this.captureMultiplier = captureMultiplier;
         this.abilityCapacity = abilityCapacity;
@@ -61,43 +58,49 @@ export class Piece {
         return this.initialSquare;
     }
 
-    setRanges(ranges: number[]) {
-        this.ranges = ranges;
+    setAttacks(attacks: [Direction, number][]) {
+        this.attacks = attacks;
     }
-    setOneRange(range: number, index: number): Boolean {
-        if (this.ranges.length <= index)
+    getAttacks(): [Direction, number][] {
+        return this.attacks;
+    }
+    addAttack(attack: [Direction, number]): Boolean {
+        if (this.attacks.indexOf(attack) !== -1)
             return false;
 
-        this.ranges[index] = range;
+        this.attacks.push(attack);
         return true;
     }
-    getRanges(): number[] {
-        return this.ranges;
-    }
-
-    setDirections(directions: Direction[]) {
-        this.directions = directions;
-    }
-    getDirections(): Direction[] {
-        return this.directions;
-    }
-    addDirection(direction: Direction, range: number = 1) {
-        if (this.directions.indexOf(direction) != -1)
-            return false;
-
-        this.directions.push(direction);
-        this.ranges.push(range);
-        return true;
-    }
-    removeDirection(direction: Direction) {
-        this.directions.splice(this.directions.indexOf(direction), 1);
-    }
-    rangeOf(direction: Direction): number {
-        let index: number = this.directions.indexOf(direction);
+    removeAttack(direction: Direction): Boolean {
+        let index: number = this.getAttackDirections().indexOf(direction);
         if (index === -1)
-            return -1;
+            return false;
 
-        return this.ranges[index];
+        this.attacks.splice(index, 1);
+        return true;
+    }
+
+    getAttackDirections(): Direction[] {
+        return this.attacks.map(([direction, _]) => direction);
+    }
+    getAttackRanges(): number[] {
+        return this.attacks.map(([_, range]) => range);
+    }
+
+    rangeOf(direction: Direction): number {
+        let index: number = this.getAttackDirections().indexOf(direction);
+        if (index === -1)
+            return 0;
+
+        return this.getAttackRanges()[index];
+    }
+    updateAttackRange(direction: Direction, range: number): Boolean {
+        let index: number = this.getAttackDirections().indexOf(direction);
+        if (index === -1)
+            return false;
+
+        this.attacks[index][1] = range;
+        return true;
     }
 
     enableLevelUp() {
@@ -132,14 +135,19 @@ export class Piece {
         return this.abilities;
     }
     addAbility(ability: Ability): Boolean {
-        if (this.abilities.indexOf(ability) != -1)
+        if (this.abilities.indexOf(ability) !== -1)
             return false;
 
         this.abilities.push(ability);
         return true;
     }
-    removeAbility(ability: Ability) {
-        this.abilities.splice(this.abilities.indexOf(ability), 1);
+    removeAbility(ability: Ability): Boolean {
+        let index: number = this.abilities.indexOf(ability);
+        if (index === -1)
+            return false;
+
+        this.abilities.splice(index, 1);
+        return true;
     }
     //! possibleAbilities(): Ability[]
 
@@ -192,3 +200,8 @@ export class Piece {
         return this.highlighted;
     }
 }
+
+
+
+
+
