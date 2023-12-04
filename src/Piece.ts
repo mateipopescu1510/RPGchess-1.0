@@ -199,6 +199,13 @@ export class Piece {
     isHighlighted() {
         return this.highlighted;
     }
+
+    isEmpty() {
+        return this.type === Type.EMPTY;
+    }
+    isNotEmpty() {
+        return this.type !== Type.EMPTY;
+    }
 }
 
 

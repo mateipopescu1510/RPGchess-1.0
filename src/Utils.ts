@@ -104,9 +104,26 @@ export enum Ability {
     // Add disabilities? Negatively effect an enemy piece?
 }
 
-export function oppositePiece(piece1: Piece, piece2: Piece): Boolean {
+export function oppositeSidePiece(piece1: Piece, piece2: Piece): Boolean {
+    // True if the pieces' sides are opposite
     return piece1.getSide() === Side.WHITE && piece2.getSide() === Side.BLACK ||
         piece1.getSide() === Side.BLACK && piece2.getSide() === Side.WHITE;
+}
+
+// export function sameSidePiece
+
+export function oppositeSide(piece: Piece, side: Side): Boolean {
+    // True if the piece's side is opposite to the input side
+    return piece.getSide() === Side.WHITE && side === Side.BLACK ||
+        piece.getSide() === Side.BLACK && side === Side.WHITE;
+}
+
+export function stringToPiece(piece: string): Type {
+    for (let type in Type) {
+        if (Type[type] === piece)
+            return Type[type];
+    }
+    return Type.EMPTY;
 }
 
 export default {
@@ -119,6 +136,6 @@ export default {
     Side,
     Type,
     Ability,
-    oppositePiece
+    stringToPiece
 }
 
