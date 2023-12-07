@@ -1,8 +1,30 @@
 import { Piece } from "./Piece";
 
-export const INFINITE_RANGE: number = 255;
+export const INFINITE_RANGE: number = 65535;
 export const INFINITE_TIME: number = -1;
-export const LEVEL_UP_XP: number[] = [10, 12, 15, 17, 19, 20, 22, 24, 25, 27, 29, 30, 32, 35, 40, 45, 50, 55, 60, 66, 72, 80];
+
+// These will all have different values once balancing becomes important
+export const PAWN_LEVELUP_XP: number[] = [10, 12, 15, 17, 19, 20, 22, 24, 25, 27, 29, 30, 32, 35, 40, 45, 50, 55, 60, 66, 72, 80];
+export const BISHOP_LEVELUP_XP: number[] = [10, 12, 15, 17, 19, 20, 22, 24, 25, 27, 29, 30, 32, 35, 40, 45, 50, 55, 60, 66, 72, 80];
+export const KNIGHT_LEVELUP_XP: number[] = [10, 12, 15, 17, 19, 20, 22, 24, 25, 27, 29, 30, 32, 35, 40, 45, 50, 55, 60, 66, 72, 80];
+export const ROOK_LEVELUP_XP: number[] = [10, 12, 15, 17, 19, 20, 22, 24, 25, 27, 29, 30, 32, 35, 40, 45, 50, 55, 60, 66, 72, 80];
+export const QUEEN_LEVELUP_XP: number[] = [10, 12, 15, 17, 19, 20, 22, 24, 25, 27, 29, 30, 32, 35, 40, 45, 50, 55, 60, 66, 72, 80];
+export const KING_LEVELUP_XP: number[] = [10, 12, 15, 17, 19, 20, 22, 24, 25, 27, 29, 30, 32, 35, 40, 45, 50, 55, 60, 66, 72, 80];
+
+export const PAWN_CAPTURE_MULTIPLIER = 0.7;
+export const BISHOP_CAPTURE_MULTIPLIER = 0.4;
+export const KNIGHT_CAPTURE_MULTIPLIER = 0.5;
+export const ROOK_CAPTURE_MULTIPLIER = 0.3;
+export const QUEEN_CAPTURE_MULTIPLIER = 0.2;
+export const KING_CAPTURE_MULTIPLIER = 0.6;
+
+export const PAWN_DEFAULT_ABILITY_CAPACITY = 2;
+export const BISHOP_DEFAULT_ABILITY_CAPACITY = 2;
+export const KNIGHT_DEFAULT_ABILITY_CAPACITY = 1;
+export const ROOK_DEFAULT_ABILITY_CAPACITY = 1;
+export const QUEEN_DEFAULT_ABILITY_CAPACITY = 1;
+export const KING_DEFAULT_ABILITY_CAPACITY = 1;
+
 export const PER_MOVE_XP: number = 5;
 
 export enum GameResult {
@@ -118,19 +140,42 @@ export function oppositeSide(piece: Piece, side: Side): Boolean {
         piece.getSide() === Side.BLACK && side === Side.WHITE;
 }
 
-export function stringToPiece(piece: string): Type {
+export function stringToPiece(piece: string): [Type, Side] {
+    let side: Side = piece === piece.toLowerCase() ? Side.BLACK : Side.WHITE;
     for (let type in Type) {
-        if (Type[type] === piece)
-            return Type[type];
+        if (Type[type] === piece.toLowerCase())
+            return [Type[type], side];
     }
-    return Type.EMPTY;
+    return [Type.EMPTY, Side.NONE];
 }
 
 export default {
     INFINITE_RANGE,
     INFINITE_TIME,
-    LEVEL_UP_XP,
+
+    PAWN_LEVELUP_XP,
+    BISHOP_LEVELUP_XP,
+    KNIGHT_LEVELUP_XP,
+    ROOK_LEVELUP_XP,
+    QUEEN_LEVELUP_XP,
+    KING_LEVELUP_XP,
+
+    PAWN_CAPTURE_MULTIPLIER,
+    BISHOP_CAPTURE_MULTIPLIER,
+    KNIGHT_CAPTURE_MULTIPLIER,
+    ROOK_CAPTURE_MULTIPLIER,
+    QUEEN_CAPTURE_MULTIPLIER,
+    KING_CAPTURE_MULTIPLIER,
+
+    PAWN_DEFAULT_ABILITY_CAPACITY,
+    BISHOP_DEFAULT_ABILITY_CAPACITY,
+    KNIGHT_DEFAULT_ABILITY_CAPACITY,
+    ROOK_DEFAULT_ABILITY_CAPACITY,
+    QUEEN_DEFAULT_ABILITY_CAPACITY,
+    KING_DEFAULT_ABILITY_CAPACITY,
+
     PER_MOVE_XP,
+
     GameResult,
     Direction,
     Side,
