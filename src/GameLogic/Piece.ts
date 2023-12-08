@@ -8,12 +8,13 @@ export class Piece {
     private canLevelUp: Boolean;
     private captureMultiplier: number;
     private abilityCapacity: number;
-    private abilities: Ability[];
+    private abilities: [Ability, number][];
     private XP: number;
     private level: number;
     private levelUpXP: number[];
     private totalXP: number;
     private moveCounter: number;
+    private maxLevel: number;
     private isMaxLevel: Boolean;
     private highlighted: Boolean;
 
@@ -23,7 +24,7 @@ export class Piece {
         type: Type = Type.EMPTY,
         initialSquare: [number, number] = [-1, -1],
         canLevelUp: Boolean = false,
-        abilities: Ability[] = [],
+        abilities: [Ability, number][] = [],
         XP: number = 0,
         level: number = 0) {
 
@@ -41,6 +42,7 @@ export class Piece {
                 this.levelUpXP = Utils.PAWN_LEVELUP_XP;
                 this.captureMultiplier = Utils.PAWN_CAPTURE_MULTIPLIER;
                 this.abilityCapacity = Utils.PAWN_DEFAULT_ABILITY_CAPACITY;
+                this.maxLevel = Utils.PAWN_MAX_LEVEL;
                 break;
             }
             case Type.BISHOP: {
@@ -48,6 +50,7 @@ export class Piece {
                 this.levelUpXP = Utils.BISHOP_LEVELUP_XP;
                 this.captureMultiplier = Utils.BISHOP_CAPTURE_MULTIPLIER;
                 this.abilityCapacity = Utils.BISHOP_DEFAULT_ABILITY_CAPACITY;
+                this.maxLevel = Utils.BISHOP_MAX_LEVEL;
                 break;
             }
             case Type.KNIGHT: {
@@ -55,6 +58,7 @@ export class Piece {
                 this.levelUpXP = Utils.KNIGHT_LEVELUP_XP;
                 this.captureMultiplier = Utils.KNIGHT_CAPTURE_MULTIPLIER;
                 this.abilityCapacity = Utils.KNIGHT_DEFAULT_ABILITY_CAPACITY;
+                this.maxLevel = Utils.KNIGHT_MAX_LEVEL;
                 break;
             }
             case Type.ROOK: {
@@ -62,6 +66,7 @@ export class Piece {
                 this.levelUpXP = Utils.ROOK_LEVELUP_XP;
                 this.captureMultiplier = Utils.ROOK_CAPTURE_MULTIPLIER;
                 this.abilityCapacity = Utils.ROOK_DEFAULT_ABILITY_CAPACITY;
+                this.maxLevel = Utils.ROOK_MAX_LEVEL;
                 break;
             }
             case Type.QUEEN: {
@@ -69,6 +74,7 @@ export class Piece {
                 this.levelUpXP = Utils.QUEEN_LEVELUP_XP;
                 this.captureMultiplier = Utils.QUEEN_CAPTURE_MULTIPLIER;
                 this.abilityCapacity = Utils.QUEEN_DEFAULT_ABILITY_CAPACITY;
+                this.maxLevel = Utils.QUEEN_MAX_LEVEL;
                 break;
             }
             case Type.KING: {
@@ -76,6 +82,7 @@ export class Piece {
                 this.levelUpXP = Utils.KING_LEVELUP_XP;
                 this.captureMultiplier = Utils.KING_CAPTURE_MULTIPLIER;
                 this.abilityCapacity = Utils.KING_DEFAULT_ABILITY_CAPACITY;
+                this.maxLevel = Utils.KING_MAX_LEVEL;
                 break;
             }
             default: {
@@ -83,6 +90,7 @@ export class Piece {
                 this.levelUpXP = [];
                 this.captureMultiplier = 0;
                 this.abilityCapacity = 0;
+                this.maxLevel = 0;
                 break;
             }
         }
@@ -93,7 +101,7 @@ export class Piece {
         this.totalXP += this.XP;
 
         this.moveCounter = 0;
-        this.isMaxLevel = false;
+        this.isMaxLevel = level >= this.maxLevel;
         this.highlighted = false;
     }
 
@@ -193,23 +201,44 @@ export class Piece {
     increaseAbilityCapacity(increment: number = 1) {
         this.abilityCapacity += increment;
     }
-    //?decreaseAbilityCapacity ?? (check >= 0)
-
-    setAbilities(abilities: Ability[]) {
-        this.abilities = abilities;
-    }
-    getAbilities(): Ability[] {
-        return this.abilities;
-    }
-    addAbility(ability: Ability): Boolean {
-        if (this.abilities.indexOf(ability) !== -1)
+    decrementAbilityCapacity(): Boolean {
+        if (this.abilityCapacity <= this.abilities.length)
             return false;
 
-        this.abilities.push(ability);
+        this.abilityCapacity--;
+        return true;
+    }
+
+    setAbilities(abilities: [Ability, number][]) {
+        this.abilities = abilities;
+    }
+    getAbilities(): [Ability, number][] {
+        return this.abilities;
+    }
+
+    getAbilitiesNames(): Ability[] {
+        return this.abilities.map(([ability, _]) => ability);
+    }
+    getAbilitiesTimesUsed(): number[] {
+        return this.abilities.map(([_, timesUsed]) => timesUsed);
+    }
+    timesUsed(ability: Ability): number {
+        let index: number = this.getAbilitiesNames().indexOf(ability);
+        if (index === -1)
+            return -1;
+
+        return this.abilities[index][1];
+    }
+
+    addAbility(ability: Ability): Boolean {
+        if (this.getAbilitiesNames().indexOf(ability) !== -1)
+            return false;
+
+        this.abilities.push([ability, 0]);
         return true;
     }
     removeAbility(ability: Ability): Boolean {
-        let index: number = this.abilities.indexOf(ability);
+        let index: number = this.getAbilitiesNames().indexOf(ability);
         if (index === -1)
             return false;
 
@@ -272,34 +301,4 @@ export class Piece {
     isHighlighted() {
         return this.highlighted;
     }
-
-    isEmpty(): Boolean {
-        return this.type === Type.EMPTY;
-    }
-    isNotEmpty(): Boolean {
-        return this.type !== Type.EMPTY;
-    }
-    isPawn(): Boolean {
-        return this.type === Type.PAWN;
-    }
-    isBishop(): Boolean {
-        return this.type === Type.BISHOP;
-    }
-    isKnight(): Boolean {
-        return this.type === Type.KNIGHT;
-    }
-    isRook(): Boolean {
-        return this.type === Type.ROOK;
-    }
-    isQueen(): Boolean {
-        return this.type === Type.QUEEN;
-    }
-    isKing(): Boolean {
-        return this.type === Type.KING;
-    }
 }
-
-
-
-
-

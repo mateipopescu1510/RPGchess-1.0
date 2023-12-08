@@ -1,3 +1,6 @@
+/*
+    A bunch of helper constants and functions
+*/
 import { Piece } from "./Piece";
 
 export const INFINITE_RANGE: number = 65535;
@@ -24,6 +27,13 @@ export const KNIGHT_DEFAULT_ABILITY_CAPACITY = 1;
 export const ROOK_DEFAULT_ABILITY_CAPACITY = 1;
 export const QUEEN_DEFAULT_ABILITY_CAPACITY = 1;
 export const KING_DEFAULT_ABILITY_CAPACITY = 1;
+
+export const PAWN_MAX_LEVEL = 10;
+export const BISHOP_MAX_LEVEL = 10;
+export const KNIGHT_MAX_LEVEL = 10;
+export const ROOK_MAX_LEVEL = 10;
+export const QUEEN_MAX_LEVEL = 10;
+export const KING_MAX_LEVEL = 10;
 
 export const PER_MOVE_XP: number = 5;
 
@@ -62,8 +72,6 @@ export enum Type {
 
 export enum Ability {
     // The commented abilities are ideas for the future
-    // Maybe make it so if a piece levels up, the chosen ability could be applied to another piece of the same type?
-    // Make variant where you choose 2 or 3 abilities at the beginning of the game
     // Add abilities that influence the clock
 
     //TODO Make it so pieces start with 2 ability slots, which can increase with the INCREASE_CAPACITY ability
@@ -79,7 +87,6 @@ export enum Ability {
     // ONE_TURN_IMMORTALITY = 103,
     // REMOVE_ABILITY = 104, // removes an ability of a chosen enemy piece, one time use
     // INCREASE_CAPACITY = 105, // add an ability slot to the piece
-    // INCREASE_XP_MULTIPLIER = 106, // increase XP multiplier for the piece by 0.1
     // INCREASE_CAPTURE_MULTIPLIER = 107, // increase capture multiplier for the piece by 0.1
     // ANCHOR = 199, // disability, nerfs the the range of the piece to 2 squares for 3 turns
 
@@ -149,6 +156,47 @@ export function stringToPiece(piece: string): [Type, Side] {
     return [Type.EMPTY, Side.NONE];
 }
 
+export function isEmpty(piece: Piece): Boolean {
+    return piece.getType() === Type.EMPTY;
+}
+export function isNotEmpty(piece: Piece): Boolean {
+    return piece.getType() !== Type.EMPTY;
+}
+export function isPawn(piece: Piece): Boolean {
+    return piece.getType() === Type.PAWN;
+}
+export function isBishop(piece: Piece): Boolean {
+    return piece.getType() === Type.BISHOP;
+}
+export function isKnight(piece: Piece): Boolean {
+    return piece.getType() === Type.KNIGHT;
+}
+export function isRook(piece: Piece): Boolean {
+    return piece.getType() === Type.ROOK;
+}
+export function isQueen(piece: Piece): Boolean {
+    return piece.getType() === Type.QUEEN;
+}
+export function isKing(piece: Piece): Boolean {
+    return piece.getType() === Type.KING;
+}
+
+export function hasLineAttack(piece: Piece): Boolean {
+    return piece.getAttackDirections().indexOf(Direction.LINE) !== -1;
+}
+export function hasDiagonalAttack(piece: Piece): Boolean {
+    return piece.getAttackDirections().indexOf(Direction.DIAGONAL) !== -1;
+}
+export function hasKnightAttack(piece: Piece): Boolean {
+    return piece.getAttackDirections().indexOf(Direction.L) !== -1;
+}
+export function hasPawnAttack(piece: Piece): Boolean {
+    return piece.getAttackDirections().indexOf(Direction.PAWN) !== -1;
+}
+export function hasCamelAttack(piece: Piece): Boolean {
+    return piece.getAttackDirections().indexOf(Direction.CAMEL) !== -1;
+}
+
 export default {
     INFINITE_RANGE,
     INFINITE_TIME,
@@ -174,6 +222,13 @@ export default {
     QUEEN_DEFAULT_ABILITY_CAPACITY,
     KING_DEFAULT_ABILITY_CAPACITY,
 
+    PAWN_MAX_LEVEL,
+    BISHOP_MAX_LEVEL,
+    KNIGHT_MAX_LEVEL,
+    ROOK_MAX_LEVEL,
+    QUEEN_MAX_LEVEL,
+    KING_MAX_LEVEL,
+
     PER_MOVE_XP,
 
     GameResult,
@@ -181,6 +236,21 @@ export default {
     Side,
     Type,
     Ability,
-    stringToPiece
+
+    stringToPiece,
+    isEmpty,
+    isNotEmpty,
+    isPawn,
+    isBishop,
+    isKnight,
+    isRook,
+    isQueen,
+    isKing,
+
+    hasLineAttack,
+    hasDiagonalAttack,
+    hasKnightAttack,
+    hasPawnAttack,
+    hasCamelAttack,
 }
 

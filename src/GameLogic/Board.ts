@@ -24,6 +24,7 @@ export class Board {
     }
 
     private convertFen() {
+        //TODO Find a way to include the times an ability was used in the fen code
         /*
             Piece information example:
             r[Xa102103x13l5] 
@@ -53,7 +54,7 @@ export class Board {
                         column += emptySquares;
                         emptySquares = 0;
                         let canLevelUp: Boolean = true;
-                        let abilities: Ability[] = [];
+                        let abilities: [Ability, number][] = [];
                         let XP: number = 0, level: number = 0;
 
                         if (row[i + 1] === "[") {
@@ -67,7 +68,7 @@ export class Board {
                                 if (row[i] === "a") {
                                     while (row[i + 1] >= '0' && row[i + 1] <= '9') {
                                         let abilityNumber = parseInt(row[i + 1] + row[i + 2] + row[i + 3]);
-                                        abilities.push(abilityNumber);
+                                        abilities.push([abilityNumber, 0]);
                                         i += 3;
                                     }
                                     i++;
@@ -116,7 +117,7 @@ export class Board {
     }
 
     movePiece([fromRow, fromColumn]: [number, number], [toRow, toColumn]: [number, number]): Boolean {
-        if (this.boardSetup[fromRow][fromColumn].isEmpty())
+        if (Utils.isEmpty(this.boardSetup[fromRow][fromColumn]))
             return false;
 
         //check if move is valid else return false
