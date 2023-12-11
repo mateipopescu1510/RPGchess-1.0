@@ -4,11 +4,11 @@ export class Piece {
     private side: Side;
     private type: Type;
     private initialSquare: [number, number];
-    private attacks: [Direction, number][];
+    private attacks: Array<[Direction, number]>;
     private canLevelUp: Boolean;
     private captureMultiplier: number;
     private abilityCapacity: number;
-    private abilities: [Ability, number][];
+    private abilities: Array<[Ability, number]>;
     private XP: number;
     private level: number;
     private levelUpXP: number[];
@@ -18,15 +18,15 @@ export class Piece {
     private isMaxLevel: Boolean;
     private highlighted: Boolean;
 
-    //TODO add maxLevel constants for each piece in Utils and a boolean data member to check whether the piece has reached its max level (and can no longer gain XP or abilities) 
-
     constructor(side: Side = Side.NONE,
         type: Type = Type.EMPTY,
         initialSquare: [number, number] = [-1, -1],
         canLevelUp: Boolean = false,
-        abilities: [Ability, number][] = [],
+        abilities: Array<[Ability, number]> = [],
         XP: number = 0,
-        level: number = 0) {
+        level: number = 0,
+        attacks: Array<[Direction, number]> = []
+    ) {
 
         this.side = side;
         this.type = type;
@@ -78,7 +78,7 @@ export class Piece {
                 break;
             }
             case Type.KING: {
-                this.attacks = [[Direction.LINE, 1], [Direction.DIAGONAL, 1]];
+                this.attacks = [[Direction.LINE, 1], [Direction.DIAGONAL, 1], [Direction.CASTLING, 1]];
                 this.levelUpXP = Utils.KING_LEVELUP_XP;
                 this.captureMultiplier = Utils.KING_CAPTURE_MULTIPLIER;
                 this.abilityCapacity = Utils.KING_DEFAULT_ABILITY_CAPACITY;
@@ -290,6 +290,10 @@ export class Piece {
     }
     incrementMoveCounter() {
         this.moveCounter++;
+    }
+
+    reachedMaxLevel(): Boolean {
+        return this.isMaxLevel;
     }
 
     highlight() {

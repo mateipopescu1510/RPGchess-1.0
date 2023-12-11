@@ -74,10 +74,7 @@ export enum Ability {
     // The commented abilities are ideas for the future
     // Add abilities that influence the clock
 
-    //TODO Make it so pieces start with 2 ability slots, which can increase with the INCREASE_CAPACITY ability
-    //TODO Move XP multiplier and capture multiplier inside Piece class and make it variable
     //TODO Make certain abilities mutually exclusive 
-
 
     //Generic abilities that any piece can have [100-199]
     NONE = -1, // in case player chooses not to apply a new ability
@@ -139,7 +136,10 @@ export function oppositeSidePiece(piece1: Piece, piece2: Piece): Boolean {
         piece1.getSide() === Side.BLACK && piece2.getSide() === Side.WHITE;
 }
 
-// export function sameSidePiece
+export function sameSide(piece: Piece, side: Side): Boolean {
+    // True if the piece's side is same as the input side
+    return piece.getSide() === side;
+}
 
 export function oppositeSide(piece: Piece, side: Side): Boolean {
     // True if the piece's side is opposite to the input side
@@ -237,7 +237,11 @@ export default {
     Type,
     Ability,
 
+    oppositeSidePiece,
+    sameSide,
+    oppositeSide,
     stringToPiece,
+
     isEmpty,
     isNotEmpty,
     isPawn,
