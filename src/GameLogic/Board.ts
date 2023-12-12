@@ -1,5 +1,5 @@
 import { Piece } from "./Piece";
-import Utils, { Direction, Ability, Type, Side, sameSide, oppositeSide } from "./Utils";
+import Utils, { Direction, Ability, Type, Side } from "./Utils";
 
 export class Board {
     private fen: string;
@@ -138,29 +138,30 @@ export class Board {
     pseudoLegalMoves([row, column]: [number, number]): Array<[number, number]> {
         let moves: Array<[number, number]> = [];
         let piece: Piece = this.boardSetup[row][column];
+        let side: Side = piece.getSide();
 
         let attackDirections: Array<Direction> = piece.getAttackDirections();
         for (let attack of attackDirections) {
             let range: number = piece.rangeOf(attack);
             switch (attack) {
                 case Direction.LINE: {
-                    moves.push(...this.checkDirections([row, column], piece.getSide(), range, [[1, 0], [-1, 0], [0, 1], [0, -1]]));
+                    moves.push(...this.checkDirections([row, column], side, range, [[1, 0], [-1, 0], [0, 1], [0, -1]]));
                     break;
                 }
                 case Direction.DIAGONAL: {
-                    moves.push(...this.checkDirections([row, column], piece.getSide(), range, [[1, 1], [-1, 1], [1, -1], [-1, -1]]));
+                    moves.push(...this.checkDirections([row, column], side, range, [[1, 1], [-1, 1], [1, -1], [-1, -1]]));
                     break;
                 }
                 case Direction.L: {
-                    moves.push(...this.checkDirections([row, column], piece.getSide(), range, [[-2, -1], [-2, 1], [-1, 2], [1, 2], [2, 1], [2, -1], [1, -2], [-1, -2]]));
+                    moves.push(...this.checkDirections([row, column], side, range, [[-2, -1], [-2, 1], [-1, 2], [1, 2], [2, 1], [2, -1], [1, -2], [-1, -2]]));
                     break;
                 }
                 case Direction.PAWN: {
-                    //WIP
+                    moves.push(...this.checkPawn([row, column], side, range));
                     break;
                 }
                 case Direction.CAMEL: {
-                    moves.push(...this.checkDirections([row, column], piece.getSide(), range, [[-3, -1], [-3, 1], [-1, 3], [1, 3], [3, 1], [3, -1], [1, -3], [-1, -3]]));
+                    moves.push(...this.checkDirections([row, column], side, range, [[-3, -1], [-3, 1], [-1, 3], [1, 3], [3, 1], [3, -1], [1, -3], [-1, -3]]));
                     break;
                 }
                 default: {
@@ -179,12 +180,38 @@ export class Board {
                 column + i * deltaColumn >= 0 &&
                 column + i * deltaColumn < this.columns &&
                 i <= range; i++) {
-                if (sameSide(this.boardSetup[row + i * deltaRow][column + i * deltaColumn], side))
+                if (Utils.sameSide(this.boardSetup[row + i * deltaRow][column + i * deltaColumn], side))
                     break;
                 moves.push([row + i * deltaRow, column + i * deltaColumn]);
-                if (oppositeSide(this.boardSetup[row + i * deltaRow][column + i * deltaColumn], side))
+                if (Utils.oppositeSide(this.boardSetup[row + i * deltaRow][column + i * deltaColumn], side))
                     break;
             }
+        return moves;
+    }
+
+    private checkPawn([row, column]: [number, number], side: Side, range: number): Array<[number, number]> {
+        let moves: Array<[number, number]> = [];
+        let deltaRow: number = side === Side.WHITE ? -1 : 1;
+        if (side === Side.WHITE && row === 0 ||
+            side === Side.BLACK && row === this.rows - 1)
+            return [];
+
+        for (let i = 1; row + i * deltaRow >= 0 &&
+            row + i * deltaRow < this.rows &&
+            i <= range; i++) {
+            if (Utils.isNotEmpty(this.boardSetup[row + deltaRow][column]))
+                break;
+            moves.push([row + deltaRow, column]);
+        }
+
+        //TODO two squares on the first move, use moveCounter
+
+        for (let deltaColumn of [-1, 1])
+            if (column + deltaColumn >= 0 &&
+                column + deltaColumn < this.columns &&
+                Utils.oppositeSide(this.boardSetup[row + deltaRow][column + deltaColumn], side))
+                moves.push([row + deltaRow, column + deltaColumn]);
+
         return moves;
     }
 
@@ -223,5 +250,7 @@ export class Board {
 //"8 8/r[102500501510]n[300]6/w" -> fen notation concept for when abilities get implemented (each ability is a 3 digit number)
 //"8 8/n5P1/2p2r2/1P6/5k2/2QB4/1q6/1PP5/8"
 
-
+// var board: Board = new Board("8 8/8/8/2Nb4/3P4/8/8/8/8");
+// board.printBoard();
+// board.printValidSquares([3, 3]);
 
