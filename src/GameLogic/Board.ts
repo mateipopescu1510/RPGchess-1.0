@@ -7,6 +7,9 @@ export class Board {
     private columns: number;
     private boardSetup: Array<Array<Piece>>;
     private movesList: Array<[[number, number], [number, number], Piece, Piece]>; // [from coordinates, to coordinates, piece that moved, piece that was landed on]
+    private whiteKingPosition: [number, number];
+    private blackKingPosition: [number, number];
+    private mustLevelUpCoordinates: [number, number];
     private halfMoveCounter: number;
 
     constructor(fen: string) {
@@ -14,7 +17,10 @@ export class Board {
         this.rows = 0;
         this.columns = 0;
         this.boardSetup = [];
-        this.movesList = [];
+        this.movesList = [[[-1, -1], [-1, -1], new Piece(), new Piece()]];
+        this.whiteKingPosition = [-1, -1];
+        this.blackKingPosition = [-1, -1];
+        this.mustLevelUpCoordinates = [-1, -1];
         this.halfMoveCounter = 0;
         this.convertFen();
     }
@@ -122,15 +128,43 @@ export class Board {
 
     movePiece([fromRow, fromColumn]: [number, number], [toRow, toColumn]: [number, number]): Boolean {
         if (Utils.isEmpty(this.boardSetup[fromRow][fromColumn]))
-            return false;
+            return false; //Exit if empty square is moved
 
-        //check if move is valid else return false
+        // console.log(this.pseudoLegalMoves([fromRow, fromColumn]).indexOf([toRow, toColumn]));
+        // moves.some(tuple => tuple.toString() === [i, j].toString())
 
+        if (!this.pseudoLegalMoves([fromRow, fromColumn]).some(tuple => tuple.toString() === [toRow, toColumn].toString()))
+            return false; //Exit if target square is not in the valid moves of the piece
 
-        if (this.getLastMove())
+        if (this.getLastMove()[0].toString() !== [-1, -1].toString())
+            //If there's a last move source square, unhighlight
+            this.boardSetup[this.getLastMove()[0][0]][this.getLastMove()[0][1]].unhighlight();
 
-            this.movesList.push([[fromRow, fromColumn], [toRow, toColumn], this.boardSetup[fromRow][fromColumn], this.boardSetup[toRow][toColumn]]);
-        this.boardSetup[toRow][toColumn] = this.boardSetup[fromRow][fromColumn];
+        if (this.getLastMove()[1].toString() !== [-1, -1].toString())
+            //If there's a last move destination square, unhighlight
+            this.boardSetup[this.getLastMove()[1][0]][this.getLastMove()[1][1]].unhighlight();
+
+        this.movesList.push([[fromRow, fromColumn], [toRow, toColumn], this.boardSetup[fromRow][fromColumn], this.boardSetup[toRow][toColumn]]);
+
+        let capturedPieceXP: number = this.boardSetup[toRow][toColumn].getTotalXP();
+        this.boardSetup[toRow][toColumn] = this.boardSetup[fromRow][fromColumn]; //Move the piece to target square
+
+        this.mustLevelUpCoordinates = this.boardSetup[toRow][toColumn].addXP(capturedPieceXP) ? [toRow, toColumn] : [-1, -1];
+
+        //TODO check for pawn promotion
+
+        if (fromRow !== toRow || fromColumn !== toColumn)
+            this.boardSetup[fromRow][fromColumn] = new Piece(); //Create empty square on the square the piece moved from
+
+        if (this.boardSetup[toRow][toColumn].getType() === Type.KING)
+            this.boardSetup[toRow][toColumn].getSide() === Side.WHITE ? this.whiteKingPosition = [toRow, toColumn] : this.blackKingPosition = [toRow, toColumn];
+
+        //Highlight this move's source and destination squares
+        this.boardSetup[fromRow][fromColumn].highlight();
+        this.boardSetup[toRow][toColumn].highlight();
+
+        //TODO finish updateFen()
+        //this.updateFen();
 
         return true;
     }
@@ -215,7 +249,7 @@ export class Board {
         return moves;
     }
 
-    getLastMove(): [[number, number], [number, number], Piece | null, Piece | null] {
+    getLastMove(): [[number, number], [number, number], Piece, Piece] {
         return this.movesList[this.movesList.length - 1];
     }
 
@@ -247,10 +281,8 @@ export class Board {
 }
 
 //"rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR"
-//"8 8/r[102500501510]n[300]6/w" -> fen notation concept for when abilities get implemented (each ability is a 3 digit number)
 //"8 8/n5P1/2p2r2/1P6/5k2/2QB4/1q6/1PP5/8"
 
-// var board: Board = new Board("8 8/8/8/2Nb4/3P4/8/8/8/8");
-// board.printBoard();
-// board.printValidSquares([3, 3]);
+
+
 

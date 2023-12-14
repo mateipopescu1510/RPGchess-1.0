@@ -254,6 +254,9 @@ export class Piece {
         return this.XP;
     }
     addXP(capturedXP: number): Boolean {
+        if (!this.canLevelUp || this.isMaxLevel)
+            return false;
+
         this.XP += Utils.PER_MOVE_XP + Math.floor(this.captureMultiplier * capturedXP);
         this.totalXP += Utils.PER_MOVE_XP + Math.floor(this.captureMultiplier * capturedXP);
 
