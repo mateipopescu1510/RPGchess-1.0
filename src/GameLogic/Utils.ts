@@ -36,6 +36,9 @@ export const QUEEN_MAX_LEVEL = 10;
 export const KING_MAX_LEVEL = 10;
 
 export const PER_MOVE_XP: number = 5;
+export const ABILITY_MAX_TIMES_USED: number = 10;
+export const DISABILITY_MAX_TIMES_USED: number = 10;
+
 
 export enum GameResult {
     BLACK_WIN = -1,
@@ -84,8 +87,9 @@ export enum Ability {
     // ONE_TURN_IMMORTALITY = 103,
     // REMOVE_ABILITY = 104, // removes an ability of a chosen enemy piece, one time use
     // INCREASE_CAPACITY = 105, // add an ability slot to the piece
+    // INCREASE_RANGE = 106, // increase range of chosen attack
     // INCREASE_CAPTURE_MULTIPLIER = 107, // increase capture multiplier for the piece by 0.1
-    // ANCHOR = 199, // disability, nerfs the the range of the piece to 2 squares for 3 turns
+    ANCHOR = 199, // disability, nerfs the the range of the piece to 2 squares for 3 turns
 
     //Pawn abilities [200-299]
     SCOUT = 200, // can advance twice in one turn
@@ -129,6 +133,8 @@ export enum Ability {
 
     // Add disabilities? Negatively effect an enemy piece?
 }
+
+export const disabilitiesList: Ability[] = [Ability.ANCHOR];
 
 export function oppositeSidePiece(piece1: Piece, piece2: Piece): Boolean {
     // True if the pieces' sides are opposite
@@ -230,12 +236,16 @@ export default {
     KING_MAX_LEVEL,
 
     PER_MOVE_XP,
+    ABILITY_MAX_TIMES_USED,
+    DISABILITY_MAX_TIMES_USED,
 
     GameResult,
     Direction,
     Side,
     Type,
     Ability,
+
+    disabilitiesList,
 
     oppositeSidePiece,
     sameSide,

@@ -32,7 +32,8 @@ export class Piece {
         this.type = type;
         this.initialSquare = initialSquare;
         this.canLevelUp = canLevelUp;
-        this.abilities = abilities;
+        this.abilities = [];
+        this.setAbilities(abilities);
         this.XP = XP;
         this.level = level;
 
@@ -215,12 +216,24 @@ export class Piece {
     getAbilities(): [Ability, number][] {
         return this.abilities;
     }
+    hasAbility(ability: Ability): Boolean {
+        let index: number = this.getAbilitiesNames().indexOf(ability);
+        return index !== -1;
+    }
 
     getAbilitiesNames(): Ability[] {
         return this.abilities.map(([ability, _]) => ability);
     }
     getAbilitiesTimesUsed(): number[] {
         return this.abilities.map(([_, timesUsed]) => timesUsed);
+    }
+    setTimesUsed(ability: Ability, timesUsed: number): Boolean {
+        let index: number = this.getAbilitiesNames().indexOf(ability);
+        if (index === -1)
+            return false;
+
+        this.abilities[index][1] = timesUsed;
+        return true;
     }
     timesUsed(ability: Ability): number {
         let index: number = this.getAbilitiesNames().indexOf(ability);
@@ -229,10 +242,41 @@ export class Piece {
 
         return this.abilities[index][1];
     }
+    private increaseTimesUsed(ability: Ability, isDisability: Boolean = false): Boolean {
+        let index: number = this.getAbilitiesNames().indexOf(ability);
+        if (index === -1)
+            return false;
+
+        this.abilities[index][1]++;
+
+        if (this.timesUsed(ability) === (isDisability ? Utils.DISABILITY_MAX_TIMES_USED : Utils.ABILITY_MAX_TIMES_USED))
+            this.removeAbility(ability);
+
+        return true;
+    }
 
     addAbility(ability: Ability): Boolean {
+        if (this.abilities.length === this.abilityCapacity)
+            return false;
         if (this.getAbilitiesNames().indexOf(ability) !== -1)
             return false;
+
+        switch (ability) {
+            case Ability.ARCHBISHOP || Ability.CHANCELLOR || Ability.ON_HORSE: {
+                this.addAttack([Direction.L, 1]);
+                break;
+            }
+            case Ability.HAS_PAWN: {
+                this.addAttack([Direction.PAWN, 1]);
+                break;
+            }
+            case Ability.SWEEPER: {
+                this.addAttack([Direction.L, 1]);
+                this.updateAttackRange(Direction.LINE, 2);
+                this.updateAttackRange(Direction.DIAGONAL, 2);
+                break;
+            }
+        }
 
         this.abilities.push([ability, 0]);
         return true;
@@ -291,8 +335,27 @@ export class Piece {
     getMoveCounter(): number {
         return this.moveCounter;
     }
-    incrementMoveCounter() {
+    incrementMoveCounter(ability: Ability = Ability.NONE) {
         this.moveCounter++;
+
+        for (let disability of Utils.disabilitiesList)
+            if (this.hasAbility(disability))
+                this.increaseTimesUsed(disability, true);
+
+        if (ability !== Ability.NONE)
+            this.increaseTimesUsed(ability);
+        /*
+            TODO
+            If no ability was last used:
+            - increase base move counter
+            - increase timesUsed for any disabilities
+            If an ability was last used:
+            - same as before
+            - increase timesUsed also for the used ability
+
+            After any timesUsed of an ability is modified, check to see if limit is reached and remove if so. Set limits as constants in Utils
+        */
+
     }
 
     reachedMaxLevel(): Boolean {
@@ -309,3 +372,11 @@ export class Piece {
         return this.highlighted;
     }
 }
+// var p: Piece = new Piece(Side.BLACK, Type.BISHOP, [-1, -1], true, [[Ability.ANCHOR, 1], [Ability.ARCHBISHOP, 0]]);
+
+// console.log(p.getAbilities());
+// p.incrementMoveCounter(Ability.ARCHBISHOP);
+// console.log(p.getAbilities());
+// console.log(p.hasAbility(Ability.ANCHOR));
+// console.log(p.hasAbility(Ability.SCOUT));
+

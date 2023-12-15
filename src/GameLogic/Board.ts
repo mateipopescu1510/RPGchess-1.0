@@ -130,10 +130,7 @@ export class Board {
         if (Utils.isEmpty(this.boardSetup[fromRow][fromColumn]))
             return false; //Exit if empty square is moved
 
-        // console.log(this.pseudoLegalMoves([fromRow, fromColumn]).indexOf([toRow, toColumn]));
-        // moves.some(tuple => tuple.toString() === [i, j].toString())
-
-        if (!this.pseudoLegalMoves([fromRow, fromColumn]).some(tuple => tuple.toString() === [toRow, toColumn].toString()))
+        if (!this.basicMoves([fromRow, fromColumn]).some(tuple => tuple.toString() === [toRow, toColumn].toString()))
             return false; //Exit if target square is not in the valid moves of the piece
 
         if (this.getLastMove()[0].toString() !== [-1, -1].toString())
@@ -159,9 +156,13 @@ export class Board {
         if (this.boardSetup[toRow][toColumn].getType() === Type.KING)
             this.boardSetup[toRow][toColumn].getSide() === Side.WHITE ? this.whiteKingPosition = [toRow, toColumn] : this.blackKingPosition = [toRow, toColumn];
 
+        //TODO modify incrementMoveCounter(). Add parameter to increase timesUsed of an ability that was possibly used and increase timesUsed of disabilities by default. Also handle ability removal by times used 
+        this.boardSetup[toRow][toColumn].incrementMoveCounter();
+
         //Highlight this move's source and destination squares
         this.boardSetup[fromRow][fromColumn].highlight();
         this.boardSetup[toRow][toColumn].highlight();
+        this.halfMoveCounter++;
 
         //TODO finish updateFen()
         //this.updateFen();
@@ -169,10 +170,16 @@ export class Board {
         return true;
     }
 
-    pseudoLegalMoves([row, column]: [number, number]): Array<[number, number]> {
-        let moves: Array<[number, number]> = [];
+    basicMoves([row, column]: [number, number]): Array<[number, number, Ability]> {
+        let moves: Array<[number, number, Ability]> = [];
         let piece: Piece = this.boardSetup[row][column];
         let side: Side = piece.getSide();
+        let abilities: Array<Ability> = piece.getAbilitiesNames();
+
+        for (let ability of abilities) {
+            moves.push(...this.checkAbility([row, column], side, ability));
+        }
+
 
         let attackDirections: Array<Direction> = piece.getAttackDirections();
         for (let attack of attackDirections) {
@@ -195,7 +202,7 @@ export class Board {
                     break;
                 }
                 case Direction.CAMEL: {
-                    moves.push(...this.checkDirections([row, column], side, range, [[-3, -1], [-3, 1], [-1, 3], [1, 3], [3, 1], [3, -1], [1, -3], [-1, -3]]));
+                    moves.push(...this.checkDirections([row, column], side, range, [[-3, -1], [-3, 1], [-1, 3], [1, 3], [3, 1], [3, -1], [1, -3], [-1, -3]], Ability.CAMEL));
                     break;
                 }
                 default: {
@@ -206,8 +213,45 @@ export class Board {
         return moves;
     }
 
-    private checkDirections([row, column]: [number, number], side: Side, range: number, delta: Array<[number, number]>): Array<[number, number]> {
-        let moves: Array<[number, number]> = [];
+    private checkAbility([row, column]: [number, number], side: Side, ability: Ability): Array<[number, number, Ability]> {
+        let moves: Array<[number, number, Ability]> = [];
+
+        switch (ability) {
+            case Ability.SCOUT: {
+                let deltaRow: number = side === Side.WHITE ? -1 : 1;
+                if (row > 1 && row < this.rows - 2 &&
+                    Utils.isEmpty(this.boardSetup[row + deltaRow][column]) &&
+                    Utils.isEmpty(this.boardSetup[row + 2 * deltaRow][column]))
+                    moves.push([row + 2 * deltaRow, column, ability]);
+                break;
+            }
+            case Ability.QUANTUM_TUNNELING: {
+                let deltaRow: number = side === Side.WHITE ? -1 : 1;
+                if (row > 1 && row < this.rows - 2 &&
+                    Utils.isPawn(this.boardSetup[row + deltaRow][column]) &&
+                    Utils.oppositeSide(this.boardSetup[row + deltaRow][column], side) &&
+                    Utils.isEmpty(this.boardSetup[row + 2 * deltaRow][column]))
+                    moves.push([row + 2 * deltaRow, column, ability]);
+                break;
+            }
+            case Ability.COLOR_COMPLEX: {
+                for (let deltaColumn of [-1, 1])
+                    if (column > 0 && column < this.columns - 1 &&
+                        Utils.isEmpty(this.boardSetup[row][column + deltaColumn]))
+                        moves.push([row, column + deltaColumn, ability]);
+                break;
+            }
+
+            default: {
+                break;
+            }
+        }
+
+        return moves;
+    }
+
+    private checkDirections([row, column]: [number, number], side: Side, range: number, delta: Array<[number, number]>, ability: Ability = Ability.NONE): Array<[number, number, Ability]> {
+        let moves: Array<[number, number, Ability]> = [];
         for (let [deltaRow, deltaColumn] of delta)
             for (let i = 1; row + i * deltaRow >= 0 &&
                 row + i * deltaRow < this.rows &&
@@ -216,15 +260,15 @@ export class Board {
                 i <= range; i++) {
                 if (Utils.sameSide(this.boardSetup[row + i * deltaRow][column + i * deltaColumn], side))
                     break;
-                moves.push([row + i * deltaRow, column + i * deltaColumn]);
+                moves.push([row + i * deltaRow, column + i * deltaColumn, ability]);
                 if (Utils.oppositeSide(this.boardSetup[row + i * deltaRow][column + i * deltaColumn], side))
                     break;
             }
         return moves;
     }
 
-    private checkPawn([row, column]: [number, number], side: Side, range: number): Array<[number, number]> {
-        let moves: Array<[number, number]> = [];
+    private checkPawn([row, column]: [number, number], side: Side, range: number): Array<[number, number, Ability]> {
+        let moves: Array<[number, number, Ability]> = [];
         let deltaRow: number = side === Side.WHITE ? -1 : 1;
         if (side === Side.WHITE && row === 0 ||
             side === Side.BLACK && row === this.rows - 1)
@@ -235,16 +279,17 @@ export class Board {
             i <= range; i++) {
             if (Utils.isNotEmpty(this.boardSetup[row + deltaRow][column]))
                 break;
-            moves.push([row + deltaRow, column]);
+            moves.push([row + deltaRow, column, Ability.NONE]);
         }
 
         //TODO two squares on the first move, use moveCounter
 
         for (let deltaColumn of [-1, 1])
+            //Maybe make range also affect capture range
             if (column + deltaColumn >= 0 &&
                 column + deltaColumn < this.columns &&
                 Utils.oppositeSide(this.boardSetup[row + deltaRow][column + deltaColumn], side))
-                moves.push([row + deltaRow, column + deltaColumn]);
+                moves.push([row + deltaRow, column + deltaColumn, Ability.NONE]);
 
         return moves;
     }
@@ -265,7 +310,7 @@ export class Board {
     printValidSquares([row, column]: [number, number]) {
         //only for testing
         let board: string = "";
-        let moves = this.pseudoLegalMoves([row, column]);
+        let moves = this.basicMoves([row, column]);
         for (let i = 0; i < this.rows; i++) {
             let rowString: string = "";
             for (let j = 0; j < this.columns; j++) {
