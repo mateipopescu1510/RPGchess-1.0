@@ -36,8 +36,9 @@ export const QUEEN_MAX_LEVEL = 10;
 export const KING_MAX_LEVEL = 10;
 
 export const PER_MOVE_XP: number = 5;
-export const ABILITY_MAX_TIMES_USED: number = 10;
-export const DISABILITY_MAX_TIMES_USED: number = 10;
+export const ABILITY_MAX_TIMES_USED: number = 5;
+export const PASSIVE_ABILITY_MAX_TIMES_USED: number = 5;
+export const DISABILITY_MAX_TIMES_USED: number = 3;
 
 
 export enum GameResult {
@@ -135,6 +136,16 @@ export enum Ability {
 }
 
 export const disabilitiesList: Ability[] = [Ability.ANCHOR];
+export const passiveAbilitiesList: Ability[] = [Ability.SMOLDERING, Ability.SWEEPER];
+
+export function coordinateInList(coordinate: [number, number], list: Array<[number, number, Ability]>): number {
+    //Returns index of the coordinate if it is in the list
+    for (let i = 0; i < list.length; i++)
+        if (list[i][0] === coordinate[0] &&
+            list[i][1] === coordinate[1])
+            return i;
+    return -1;
+}
 
 export function oppositeSidePiece(piece1: Piece, piece2: Piece): Boolean {
     // True if the pieces' sides are opposite
@@ -237,6 +248,7 @@ export default {
 
     PER_MOVE_XP,
     ABILITY_MAX_TIMES_USED,
+    PASSIVE_ABILITY_MAX_TIMES_USED,
     DISABILITY_MAX_TIMES_USED,
 
     GameResult,
@@ -246,7 +258,9 @@ export default {
     Ability,
 
     disabilitiesList,
+    passiveAbilitiesList,
 
+    coordinateInList,
     oppositeSidePiece,
     sameSide,
     oppositeSide,

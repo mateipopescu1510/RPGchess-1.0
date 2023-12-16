@@ -130,8 +130,11 @@ export class Board {
         if (Utils.isEmpty(this.boardSetup[fromRow][fromColumn]))
             return false; //Exit if empty square is moved
 
-        if (!this.basicMoves([fromRow, fromColumn]).some(tuple => tuple.toString() === [toRow, toColumn].toString()))
-            return false; //Exit if target square is not in the valid moves of the piece
+        let moves: Array<[number, number, Ability]> = this.validMoves([fromRow, fromColumn]);
+        let moveIndex: number = Utils.coordinateInList([toRow, toColumn], moves);
+
+        if (moveIndex === -1)
+            return false; //Exit if target square is not in the list of valid moves
 
         if (this.getLastMove()[0].toString() !== [-1, -1].toString())
             //If there's a last move source square, unhighlight
@@ -157,7 +160,10 @@ export class Board {
             this.boardSetup[toRow][toColumn].getSide() === Side.WHITE ? this.whiteKingPosition = [toRow, toColumn] : this.blackKingPosition = [toRow, toColumn];
 
         //TODO modify incrementMoveCounter(). Add parameter to increase timesUsed of an ability that was possibly used and increase timesUsed of disabilities by default. Also handle ability removal by times used 
-        this.boardSetup[toRow][toColumn].incrementMoveCounter();
+
+        let abilityUsed: Ability = moves[moveIndex][2];
+        abilityUsed === Ability.NONE ? this.boardSetup[toRow][toColumn].incrementMoveCounter() : this.boardSetup[toRow][toColumn].incrementMoveCounter(abilityUsed);
+        //If the move was made using an ability, increment the piece's move counter as long as the times used of that ability
 
         //Highlight this move's source and destination squares
         this.boardSetup[fromRow][fromColumn].highlight();
@@ -170,47 +176,33 @@ export class Board {
         return true;
     }
 
-    basicMoves([row, column]: [number, number]): Array<[number, number, Ability]> {
+    //Make private when done with testing
+    validMoves([row, column]: [number, number]): Array<[number, number, Ability]> {
         let moves: Array<[number, number, Ability]> = [];
         let piece: Piece = this.boardSetup[row][column];
         let side: Side = piece.getSide();
         let abilities: Array<Ability> = piece.getAbilitiesNames();
+        let attacks: Array<[Direction, number]> = piece.getAttacks();
 
-        for (let ability of abilities) {
+        if (this.checkPassiveAbilities([row, column]))
+            return [];
+
+        for (let ability of abilities)
             moves.push(...this.checkAbility([row, column], side, ability));
-        }
 
+        for (let attack of attacks)
+            moves.push(...this.checkAttacks([row, column], side, attack));
 
-        let attackDirections: Array<Direction> = piece.getAttackDirections();
-        for (let attack of attackDirections) {
-            let range: number = piece.rangeOf(attack);
-            switch (attack) {
-                case Direction.LINE: {
-                    moves.push(...this.checkDirections([row, column], side, range, [[1, 0], [-1, 0], [0, 1], [0, -1]]));
-                    break;
-                }
-                case Direction.DIAGONAL: {
-                    moves.push(...this.checkDirections([row, column], side, range, [[1, 1], [-1, 1], [1, -1], [-1, -1]]));
-                    break;
-                }
-                case Direction.L: {
-                    moves.push(...this.checkDirections([row, column], side, range, [[-2, -1], [-2, 1], [-1, 2], [1, 2], [2, 1], [2, -1], [1, -2], [-1, -2]]));
-                    break;
-                }
-                case Direction.PAWN: {
-                    moves.push(...this.checkPawn([row, column], side, range));
-                    break;
-                }
-                case Direction.CAMEL: {
-                    moves.push(...this.checkDirections([row, column], side, range, [[-3, -1], [-3, 1], [-1, 3], [1, 3], [3, 1], [3, -1], [1, -3], [-1, -3]], Ability.CAMEL));
-                    break;
-                }
-                default: {
-                    break;
-                }
-            }
-        }
         return moves;
+    }
+
+    private checkPassiveAbilities([row, column]: [number, number]): Boolean {
+        //Check if passive abilities affect the piece that is moving
+        if (Utils.isQueen(this.boardSetup[row][column]) &&
+            this.getLastMove()[2].hasAbility(Ability.SMOLDERING))
+            return true;
+
+        return false;
     }
 
     private checkAbility([row, column]: [number, number], side: Side, ability: Ability): Array<[number, number, Ability]> {
@@ -223,7 +215,7 @@ export class Board {
                     Utils.isEmpty(this.boardSetup[row + deltaRow][column]) &&
                     Utils.isEmpty(this.boardSetup[row + 2 * deltaRow][column]))
                     moves.push([row + 2 * deltaRow, column, ability]);
-                break;
+                return moves;
             }
             case Ability.QUANTUM_TUNNELING: {
                 let deltaRow: number = side === Side.WHITE ? -1 : 1;
@@ -232,14 +224,26 @@ export class Board {
                     Utils.oppositeSide(this.boardSetup[row + deltaRow][column], side) &&
                     Utils.isEmpty(this.boardSetup[row + 2 * deltaRow][column]))
                     moves.push([row + 2 * deltaRow, column, ability]);
-                break;
+                return moves;
             }
             case Ability.COLOR_COMPLEX: {
                 for (let deltaColumn of [-1, 1])
                     if (column > 0 && column < this.columns - 1 &&
                         Utils.isEmpty(this.boardSetup[row][column + deltaColumn]))
                         moves.push([row, column + deltaColumn, ability]);
-                break;
+                return moves;
+            }
+            case Ability.ARCHBISHOP || Ability.CHANCELLOR || Ability.ON_HORSE: {
+                return this.checkAttacks([row, column], side, [Direction.L, 1], ability);
+            }
+            case Ability.CAMEL || Ability.ON_CAMEL: {
+                return this.checkAttacks([row, column], side, [Direction.CAMEL, 1], ability)
+            }
+            case Ability.HAS_PAWN: {
+                return this.checkAttacks([row, column], side, [Direction.PAWN, 1], ability)
+            }
+            case Ability.SKIP: {
+                return [[row, column, ability]];
             }
 
             default: {
@@ -250,8 +254,34 @@ export class Board {
         return moves;
     }
 
-    private checkDirections([row, column]: [number, number], side: Side, range: number, delta: Array<[number, number]>, ability: Ability = Ability.NONE): Array<[number, number, Ability]> {
+    private checkAttacks([row, column]: [number, number], side: Side, [direction, range]: [Direction, number], ability: Ability = Ability.NONE) {
         let moves: Array<[number, number, Ability]> = [];
+        let delta: Array<[number, number]> = [];
+        switch (direction) {
+            case Direction.LINE: {
+                delta = [[1, 0], [-1, 0], [0, 1], [0, -1]];
+                break;
+            }
+            case Direction.DIAGONAL: {
+                delta = [[1, 1], [-1, 1], [1, -1], [-1, -1]];
+                break;
+            }
+            case Direction.L: {
+                delta = [[-2, -1], [-2, 1], [-1, 2], [1, 2], [2, 1], [2, -1], [1, -2], [-1, -2]];
+                break;
+            }
+            case Direction.PAWN: {
+                return this.checkPawn([row, column], side, range);
+            }
+            case Direction.CAMEL: {
+                delta = [[-3, -1], [-3, 1], [-1, 3], [1, 3], [3, 1], [3, -1], [1, -3], [-1, -3]];
+                break;
+            }
+            default: {
+                break;
+            }
+        }
+
         for (let [deltaRow, deltaColumn] of delta)
             for (let i = 1; row + i * deltaRow >= 0 &&
                 row + i * deltaRow < this.rows &&
@@ -264,6 +294,7 @@ export class Board {
                 if (Utils.oppositeSide(this.boardSetup[row + i * deltaRow][column + i * deltaColumn], side))
                     break;
             }
+
         return moves;
     }
 
@@ -308,16 +339,16 @@ export class Board {
     }
 
     printValidSquares([row, column]: [number, number]) {
-        //only for testing
+        //only for testing 
         let board: string = "";
-        let moves = this.basicMoves([row, column]);
+        let moves = this.validMoves([row, column]);
         for (let i = 0; i < this.rows; i++) {
             let rowString: string = "";
             for (let j = 0; j < this.columns; j++) {
                 if ([i, j].toString() == [row, column].toString())
                     rowString += "@ ";
                 else
-                    rowString += moves.some(tuple => tuple.toString() === [i, j].toString()) ? "x " : ". ";
+                    rowString += Utils.coordinateInList([i, j], moves) !== -1 ? "x " : ". ";
             }
             board += rowString + "\n";
         }
