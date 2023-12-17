@@ -119,7 +119,8 @@ export class Board {
         });
     }
 
-    private updateFen() {
+    //TODO finish updateFen()
+    updateFen() {
         let newFen: string = "";
         this.fen.split("/").forEach((row, rowIndex) => {
             //TODO might have to look through every single row instead of just the ones where a piece moved to be compatible with pieces affecting other pieces (for example a piece applying a disability to another piece)
@@ -159,8 +160,6 @@ export class Board {
         if (this.boardSetup[toRow][toColumn].getType() === Type.KING)
             this.boardSetup[toRow][toColumn].getSide() === Side.WHITE ? this.whiteKingPosition = [toRow, toColumn] : this.blackKingPosition = [toRow, toColumn];
 
-        //TODO modify incrementMoveCounter(). Add parameter to increase timesUsed of an ability that was possibly used and increase timesUsed of disabilities by default. Also handle ability removal by times used 
-
         let abilityUsed: Ability = moves[moveIndex][2];
         abilityUsed === Ability.NONE ? this.boardSetup[toRow][toColumn].incrementMoveCounter() : this.boardSetup[toRow][toColumn].incrementMoveCounter(abilityUsed);
         //If the move was made using an ability, increment the piece's move counter as long as the times used of that ability
@@ -197,7 +196,7 @@ export class Board {
     }
 
     private checkPassiveAbilities([row, column]: [number, number]): Boolean {
-        //Check if passive abilities affect the piece that is moving
+        //Check if passive abilities affect the piece that is moving (so far only passive interaction is queens being frozen by knights with smoldering)
         if (Utils.isQueen(this.boardSetup[row][column]) &&
             this.getLastMove()[2].hasAbility(Ability.SMOLDERING))
             return true;
@@ -257,6 +256,7 @@ export class Board {
     private checkAttacks([row, column]: [number, number], side: Side, [direction, range]: [Direction, number], ability: Ability = Ability.NONE) {
         let moves: Array<[number, number, Ability]> = [];
         let delta: Array<[number, number]> = [];
+
         switch (direction) {
             case Direction.LINE: {
                 delta = [[1, 0], [-1, 0], [0, 1], [0, -1]];
@@ -354,10 +354,59 @@ export class Board {
         }
         console.log(board);
     }
+
+    getLevelUpCoordinates(): [number, number] {
+        return this.mustLevelUpCoordinates;
+    }
+
+    mustLevelUp(): Boolean {
+        return this.mustLevelUpCoordinates[0] !== -1 && this.mustLevelUpCoordinates[1] !== -1;
+    }
+
+    levelUpDone() {
+        this.mustLevelUpCoordinates = [-1, -1];
+    }
+
 }
 
 //"rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR"
 //"8 8/n5P1/2p2r2/1P6/5k2/2QB4/1q6/1PP5/8"
+
+// var board: Board = new Board("8 8/n7/8/8/3q[a601]4/2pN[a301]4/2p5/8/8");
+// board.printBoard();
+
+// board.printValidSquares([3, 3]);
+
+// console.log(board.movePiece([4, 3], [2, 2]));
+
+// board.printBoard();
+
+// board.printValidSquares([3, 3]);
+
+
+// var piece: Piece = board.getBoardSetup()[3][3];
+// console.log(piece.getAttacks());
+// console.log(board.validMoves([3, 3]));
+// console.log(piece.getAbilities());
+// board.printValidSquares([3, 3]);
+
+// console.log(board.movePiece([3, 3], [2, 5]));
+
+// board.printBoard();
+// console.log(board.validMoves([2, 5]));
+// console.log(piece.getAbilities());
+// board.printValidSquares([2, 5]);
+
+// console.log(board.movePiece([2, 5], [3, 3]));
+
+// board.printBoard();
+// console.log(board.validMoves([3, 3]));
+// console.log(piece.getAbilities());
+// board.printValidSquares([3, 3]);
+
+// console.log(board.getBoardSetup()[3][3].addAbility(Ability.QUANTUM_TUNNELING));
+// console.log(board.validMoves([3, 3]));
+// board.printValidSquares([3, 3]);
 
 
 

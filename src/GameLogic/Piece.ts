@@ -9,6 +9,7 @@ export class Piece {
     private captureMultiplier: number;
     private abilityCapacity: number;
     private abilities: Array<[Ability, number]>;
+    private possibleAbilities: Array<Ability>;
     private XP: number;
     private level: number;
     private levelUpXP: number[];
@@ -42,6 +43,7 @@ export class Piece {
                 this.captureMultiplier = Utils.PAWN_CAPTURE_MULTIPLIER;
                 this.abilityCapacity = Utils.PAWN_DEFAULT_ABILITY_CAPACITY;
                 this.maxLevel = Utils.PAWN_MAX_LEVEL;
+                this.possibleAbilities = Utils.PAWN_ABILITIES;
                 break;
             }
             case Type.BISHOP: {
@@ -50,6 +52,7 @@ export class Piece {
                 this.captureMultiplier = Utils.BISHOP_CAPTURE_MULTIPLIER;
                 this.abilityCapacity = Utils.BISHOP_DEFAULT_ABILITY_CAPACITY;
                 this.maxLevel = Utils.BISHOP_MAX_LEVEL;
+                this.possibleAbilities = Utils.BISHOP_ABILITIES;
                 break;
             }
             case Type.KNIGHT: {
@@ -58,6 +61,7 @@ export class Piece {
                 this.captureMultiplier = Utils.KNIGHT_CAPTURE_MULTIPLIER;
                 this.abilityCapacity = Utils.KNIGHT_DEFAULT_ABILITY_CAPACITY;
                 this.maxLevel = Utils.KNIGHT_MAX_LEVEL;
+                this.possibleAbilities = Utils.KNIGHT_ABILITIES;
                 break;
             }
             case Type.ROOK: {
@@ -66,6 +70,7 @@ export class Piece {
                 this.captureMultiplier = Utils.ROOK_CAPTURE_MULTIPLIER;
                 this.abilityCapacity = Utils.ROOK_DEFAULT_ABILITY_CAPACITY;
                 this.maxLevel = Utils.ROOK_MAX_LEVEL;
+                this.possibleAbilities = Utils.ROOK_ABILITIES;
                 break;
             }
             case Type.QUEEN: {
@@ -74,6 +79,7 @@ export class Piece {
                 this.captureMultiplier = Utils.QUEEN_CAPTURE_MULTIPLIER;
                 this.abilityCapacity = Utils.QUEEN_DEFAULT_ABILITY_CAPACITY;
                 this.maxLevel = Utils.QUEEN_MAX_LEVEL;
+                this.possibleAbilities = Utils.QUEEN_ABILITIES;
                 break;
             }
             case Type.KING: {
@@ -82,6 +88,7 @@ export class Piece {
                 this.captureMultiplier = Utils.KING_CAPTURE_MULTIPLIER;
                 this.abilityCapacity = Utils.KING_DEFAULT_ABILITY_CAPACITY;
                 this.maxLevel = Utils.KING_MAX_LEVEL;
+                this.possibleAbilities = Utils.KING_ABILITIES;
                 break;
             }
             default: {
@@ -90,6 +97,7 @@ export class Piece {
                 this.captureMultiplier = 0;
                 this.abilityCapacity = 0;
                 this.maxLevel = 0;
+                this.possibleAbilities = [];
                 break;
             }
         }
@@ -105,6 +113,7 @@ export class Piece {
         this.highlighted = false;
     }
 
+    //*SIDE
     setSide(side: Side) {
         this.side = side;
     }
@@ -112,6 +121,7 @@ export class Piece {
         return this.side;
     }
 
+    //*TYPE
     setType(type: Type) {
         this.type = type;
     }
@@ -119,10 +129,12 @@ export class Piece {
         return this.type;
     }
 
+    //*INITIAL SQUARE
     getInitialSquare(): [number, number] {
         return this.initialSquare;
     }
 
+    //*ATTACKS
     setAttacks(attacks: [Direction, number][]) {
         this.attacks = attacks;
     }
@@ -175,6 +187,7 @@ export class Piece {
         return true;
     }
 
+    //*CAN LEVEL UP
     getCanLevelUp(): Boolean {
         return this.canLevelUp;
     }
@@ -185,6 +198,7 @@ export class Piece {
         this.canLevelUp = false;
     }
 
+    //*CAPTURE MULTIPLIER
     setCaptureMultiplier(captureMultiplier: number) {
         this.captureMultiplier = captureMultiplier;
     }
@@ -192,6 +206,7 @@ export class Piece {
         return this.captureMultiplier;
     }
 
+    //*ABILITY CAPACITY
     setAbilityCapacity(abilityCapacity: number) {
         this.abilityCapacity = abilityCapacity;
     }
@@ -209,6 +224,7 @@ export class Piece {
         return true;
     }
 
+    //*ABILITIES
     setAbilities(abilities: [Ability, number][]) {
         for (let [ability, timesUsed] of abilities)
             this.addAbility(ability, timesUsed);
@@ -249,19 +265,20 @@ export class Piece {
 
         this.abilities[index][1]++;
 
-        if (Utils.passiveAbilitiesList.indexOf(ability) !== -1 &&
+        if (Utils.PASSIVE_ABILITIES.indexOf(ability) !== -1 &&
             this.timesUsed(ability) >= Utils.PASSIVE_ABILITY_MAX_TIMES_USED ||
-            Utils.disabilitiesList.indexOf(ability) !== -1 &&
+            Utils.DISABILITIES.indexOf(ability) !== -1 &&
             this.timesUsed(ability) >= Utils.DISABILITY_MAX_TIMES_USED)
             this.removeAbility(ability);
 
         return true;
     }
 
+    //*ADD/REMOVE ABILITY
     addAbility(ability: Ability, timesUsed: number = 0): Boolean {
         if (this.abilities.length === this.abilityCapacity)
             return false;
-        if (this.getAbilitiesNames().indexOf(ability) !== -1)
+        if (this.getAbilitiesNames().indexOf(ability) !== -1 || this.possibleAbilities.indexOf(ability) === -1)
             return false;
 
         switch (ability) {
@@ -277,6 +294,7 @@ export class Piece {
         }
 
         this.abilities.push([ability, timesUsed]);
+        this.possibleAbilities.splice(this.possibleAbilities.indexOf(ability), 1);
         return true;
     }
     removeAbility(ability: Ability): Boolean {
@@ -297,10 +315,16 @@ export class Piece {
         }
 
         this.abilities.splice(index, 1);
+        this.possibleAbilities.push(ability);
         return true;
     }
-    //! possibleAbilities(): Ability[]
 
+    //*POSSIBLE ABILITIES
+    getPossibleAbilities(): Array<Ability> {
+        return this.possibleAbilities;
+    }
+
+    //*XP
     setXP(XP: number) {
         this.XP = XP;
     }
@@ -308,15 +332,13 @@ export class Piece {
         return this.XP;
     }
     addXP(capturedXP: number): Boolean {
-        if (!this.canLevelUp || this.isMaxLevel)
-            return false;
-
         this.XP += Utils.PER_MOVE_XP + Math.floor(this.captureMultiplier * capturedXP);
         this.totalXP += Utils.PER_MOVE_XP + Math.floor(this.captureMultiplier * capturedXP);
 
         return this.levelUpXP[this.level] <= this.XP;
     }
 
+    //*LEVEL UP XP
     setLevelUpXP(levelUpXP: number[]) {
         this.levelUpXP = levelUpXP;
     }
@@ -324,21 +346,29 @@ export class Piece {
         return this.levelUpXP;
     }
 
+    //*TOTAL XP
     getTotalXP(): number {
         return this.totalXP;
     }
 
-
+    //*LEVEL
     setLevel(level: number) {
         this.level = level;
     }
     getLevel(): number {
         return this.level;
     }
-    increaseLevel() {
+    increaseLevel(): Boolean {
+        if (!this.canLevelUp || this.isMaxLevel)
+            return false;
+
+        this.XP -= this.levelUpXP[this.level];
         this.level++;
+
+        return true;
     }
 
+    //*MOVE COUNTER
     setMoveCounter(moveCounter: number) {
         this.moveCounter = moveCounter;
     }
@@ -348,11 +378,11 @@ export class Piece {
     incrementMoveCounter(ability: Ability = Ability.NONE) {
         this.moveCounter++;
 
-        for (let disability of Utils.disabilitiesList)
+        for (let disability of Utils.DISABILITIES)
             if (this.hasAbility(disability))
                 this.increaseTimesUsed(disability);
 
-        for (let passiveAbility of Utils.passiveAbilitiesList)
+        for (let passiveAbility of Utils.PASSIVE_ABILITIES)
             if (this.hasAbility(passiveAbility))
                 this.increaseTimesUsed(passiveAbility);
 
@@ -360,10 +390,12 @@ export class Piece {
             this.increaseTimesUsed(ability);
     }
 
+    //*MAX LEVEL
     reachedMaxLevel(): Boolean {
         return this.isMaxLevel;
     }
 
+    //*HIGHLIGHT
     highlight() {
         this.highlighted = true;
     }
@@ -374,3 +406,15 @@ export class Piece {
         return this.highlighted;
     }
 }
+
+// var piece: Piece = new Piece(Side.BLACK, Type.BISHOP, [0, 0], true, [[Ability.SMOLDERING, 0], [Ability.CAMEL, 1]]);
+// console.log(piece.getAbilities());
+// console.log(piece.getPossibleAbilities());
+
+// console.log(piece.addAbility(Ability.ARCHBISHOP));
+// console.log(piece.getAbilities());
+// console.log(piece.getPossibleAbilities());
+
+// console.log(piece.removeAbility(Ability.ARCHBISHOP));
+// console.log(piece.getAbilities());
+// console.log(piece.getPossibleAbilities());
