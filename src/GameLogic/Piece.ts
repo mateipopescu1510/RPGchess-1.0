@@ -101,6 +101,10 @@ export class Piece {
                 break;
             }
         }
+
+        if (Utils.isNotEmpty(this))
+            this.possibleAbilities.push(...Utils.GENERIC_ABILITIES);
+
         this.abilities = [];
         this.setAbilities(abilities);
         this.totalXP = 0;
@@ -202,6 +206,9 @@ export class Piece {
     setCaptureMultiplier(captureMultiplier: number) {
         this.captureMultiplier = captureMultiplier;
     }
+    increaseCaptureMultiplier(increment: number = 0.1) {
+        this.captureMultiplier += increment;
+    }
     getCaptureMultiplier(): number {
         return this.captureMultiplier;
     }
@@ -276,16 +283,28 @@ export class Piece {
 
     //*ADD/REMOVE ABILITY
     addAbility(ability: Ability, timesUsed: number = 0): Boolean {
-        if (this.abilities.length === this.abilityCapacity)
+        if (this.abilities.length === this.abilityCapacity && ability !== Ability.INCREASE_CAPACITY)
             return false;
         if (this.getAbilitiesNames().indexOf(ability) !== -1 || this.possibleAbilities.indexOf(ability) === -1)
             return false;
 
         switch (ability) {
+            case Ability.INCREASE_CAPACITY: {
+                this.increaseAbilityCapacity();
+                return true;
+            }
+            case Ability.INCREASE_CAPTURE_MULTIPLIER: {
+                this.increaseCaptureMultiplier();
+                return true;
+            }
             case Ability.SWEEPER: {
                 this.addAttack([Direction.L, 1]);
                 this.updateAttackRange(Direction.LINE, 2);
                 this.updateAttackRange(Direction.DIAGONAL, 2);
+                break;
+            }
+            case Ability.LEAPER: {
+                this.updateAttackRange(Direction.L, 2);
                 break;
             }
             default: {
@@ -307,6 +326,10 @@ export class Piece {
                 this.removeAttack(Direction.L);
                 this.updateAttackRange(Direction.LINE, Utils.INFINITE_RANGE);
                 this.updateAttackRange(Direction.DIAGONAL, Utils.INFINITE_RANGE);
+                break;
+            }
+            case Ability.LEAPER: {
+                this.updateAttackRange(Direction.L, 1);
                 break;
             }
             default: {
