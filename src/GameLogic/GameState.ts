@@ -59,6 +59,14 @@ export class GameState {
         return false;
     }
 
+    getBoard(): Board {
+        return this.board;
+    }
+
+    getTurn(): number {
+        return this.currentTurn;
+    }
+
     private changeTurn() {
         this.currentTurn = 1 - this.currentTurn;
     }
