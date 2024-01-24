@@ -76,11 +76,9 @@ export enum Type {
 
 export enum Ability {
     //Generic abilities that any piece can have [100-199]
-    NONE = 0, // in case player chooses not to apply a new ability
-    SHIELD = 100, //TODO survives being captured (move that captures shielded piece gets undone and shield drops) 
+    NONE = 0, // in case player chooses not to apply a new ability 
     INCREASE_CAPACITY = 101, // increases ability capacity by 1
-    INCREASE_CAPTURE_MULTIPLIER = 102, // increases capture multiplier by 0.1
-    ANCHOR = 199, // disability, nerfs the the range of the piece to 2 squares for 3 turns
+    INCREASE_CAPTURE_MULTIPLIER = 102, // increases capture multiplier by 0.2
 
     //Pawn abilities [200-299]
     SCOUT = 200, // can advance twice in one turn
@@ -102,6 +100,7 @@ export enum Ability {
 
     //Queen abilities [600-699]
     SWEEPER = 601, // can also move like a knight but lines and diagonals have reduced range
+    BOOST_ADJACENT_PIECES = 602, // adjacent friendly pieces get a 0.1 capture multiplier increase
 
     //King abilities [700-799]
     SKIP = 700, // can skip a turn by moving on its own square
@@ -109,15 +108,14 @@ export enum Ability {
     ON_CAMEL = 705, // can also move like a camel
 }
 
-export const DISABILITIES: Ability[] = [Ability.ANCHOR];
-export const GENERIC_ABILITIES: Ability[] = [Ability.SHIELD, Ability.INCREASE_CAPACITY, Ability.INCREASE_CAPTURE_MULTIPLIER];
-export const PASSIVE_ABILITIES: Ability[] = [Ability.SHIELD, Ability.SMOLDERING, Ability.SWEEPER, Ability.LEAPER];
+export const GENERIC_ABILITIES: Ability[] = [Ability.INCREASE_CAPACITY, Ability.INCREASE_CAPTURE_MULTIPLIER];
+export const PASSIVE_ABILITIES: Ability[] = [Ability.SMOLDERING, Ability.SWEEPER, Ability.LEAPER, Ability.BOOST_ADJACENT_PIECES];
 
 export const PAWN_ABILITIES: Ability[] = [Ability.SCOUT, Ability.QUANTUM_TUNNELING, Ability.BACKWARDS];
 export const BISHOP_ABILITIES: Ability[] = [Ability.COLOR_COMPLEX, Ability.ARCHBISHOP];
 export const KNIGHT_ABILITIES: Ability[] = [Ability.SMOLDERING, Ability.CAMEL, Ability.LEAPER];
 export const ROOK_ABILITIES: Ability[] = [Ability.HAS_PAWN, Ability.CHANCELLOR];
-export const QUEEN_ABILITIES: Ability[] = [Ability.SWEEPER];
+export const QUEEN_ABILITIES: Ability[] = [Ability.SWEEPER, Ability.BOOST_ADJACENT_PIECES];
 export const KING_ABILITIES: Ability[] = [Ability.SKIP, Ability.ON_HORSE, Ability.ON_CAMEL];
 
 export function coordinateInList(coordinate: [number, number], list: Array<[number, number, Ability]>): number {
@@ -133,6 +131,11 @@ export function oppositeSidePiece(piece1: Piece, piece2: Piece): Boolean {
     // True if the pieces' sides are opposite
     return piece1.getSide() === Side.WHITE && piece2.getSide() === Side.BLACK ||
         piece1.getSide() === Side.BLACK && piece2.getSide() === Side.WHITE;
+}
+
+export function sameSidePiece(piece1: Piece, piece2: Piece): Boolean {
+    return piece1.getSide() === Side.WHITE && piece2.getSide() === Side.WHITE ||
+        piece1.getSide() === Side.BLACK && piece2.getSide() === Side.BLACK;
 }
 
 export function sameSide(piece: Piece, side: Side): Boolean {
@@ -245,7 +248,6 @@ export default {
     Type,
     Ability,
 
-    DISABILITIES,
     GENERIC_ABILITIES,
     PASSIVE_ABILITIES,
     PAWN_ABILITIES,
@@ -257,6 +259,7 @@ export default {
 
     coordinateInList,
     oppositeSidePiece,
+    sameSidePiece,
     sameSide,
     oppositeSide,
     oppositeColor,

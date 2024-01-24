@@ -206,7 +206,7 @@ export class Piece {
     setCaptureMultiplier(captureMultiplier: number) {
         this.captureMultiplier = captureMultiplier;
     }
-    increaseCaptureMultiplier(increment: number = 0.1) {
+    increaseCaptureMultiplier(increment: number = 0.2) {
         this.captureMultiplier += increment;
     }
     getCaptureMultiplier(): number {
@@ -273,9 +273,7 @@ export class Piece {
         this.abilities[index][1]++;
 
         if (Utils.PASSIVE_ABILITIES.indexOf(ability) !== -1 &&
-            this.timesUsed(ability) >= Utils.PASSIVE_ABILITY_MAX_TIMES_USED ||
-            Utils.DISABILITIES.indexOf(ability) !== -1 &&
-            this.timesUsed(ability) >= Utils.DISABILITY_MAX_TIMES_USED)
+            this.timesUsed(ability) >= Utils.PASSIVE_ABILITY_MAX_TIMES_USED)
             this.removeAbility(ability);
 
         return true;
@@ -287,6 +285,9 @@ export class Piece {
             return false;
         if (this.getAbilitiesNames().indexOf(ability) !== -1 || this.possibleAbilities.indexOf(ability) === -1)
             return false;
+
+        //TODO modify timesUsed into timeRemaining and have it count down to 0 until ability gets removed
+        timesUsed = 0;
 
         switch (ability) {
             case Ability.INCREASE_CAPACITY: {
@@ -400,10 +401,6 @@ export class Piece {
     }
     incrementMoveCounter(ability: Ability = Ability.NONE) {
         this.moveCounter++;
-
-        for (let disability of Utils.DISABILITIES)
-            if (this.hasAbility(disability))
-                this.increaseTimesUsed(disability);
 
         for (let passiveAbility of Utils.PASSIVE_ABILITIES)
             if (this.hasAbility(passiveAbility))
