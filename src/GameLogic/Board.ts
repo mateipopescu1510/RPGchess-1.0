@@ -41,7 +41,7 @@ export class Board {
             Piece information example:
             r[Xa102103x13l5] 
             X - if this character appears, the piece can't level up
-            a102102 - piece has abilities with codes 102 and 103
+            a102103 - piece has abilities with codes 102 and 103
             x13 - piece has 13 XP
             l5 - piece is level 5
             TODO below (WIP ideas)
@@ -288,7 +288,12 @@ export class Board {
             case Ability.SKIP: {
                 return [[row, column, ability]];
             }
-
+            case Ability.BACKWARDS: {
+                let deltaRow: number = side === Side.WHITE ? 1 : -1;
+                if (row + deltaRow < 0 || row + deltaRow >= this.rows || Utils.isNotEmpty(this.boardSetup[row + deltaRow][column]))
+                    return [];
+                return [[row + deltaRow, column, ability]];
+            }
             default: {
                 break;
             }
@@ -349,18 +354,18 @@ export class Board {
             side === Side.BLACK && row === this.rows - 1)
             return [];
 
+        if (this.boardSetup[row][column].getMoveCounter() === 0 && range === 1)
+            range = 2;
+
         for (let i = 1; row + i * deltaRow >= 0 &&
             row + i * deltaRow < this.rows &&
             i <= range; i++) {
-            if (Utils.isNotEmpty(this.boardSetup[row + deltaRow][column]))
+            if (Utils.isNotEmpty(this.boardSetup[row + i * deltaRow][column]))
                 break;
-            moves.push([row + deltaRow, column, Ability.NONE]);
+            moves.push([row + i * deltaRow, column, Ability.NONE]);
         }
 
-        //TODO two squares on the first move, use moveCounter
-
         for (let deltaColumn of [-1, 1])
-            //Maybe make range also affect capture range
             if (column + deltaColumn >= 0 &&
                 column + deltaColumn < this.columns &&
                 Utils.oppositeSide(this.boardSetup[row + deltaRow][column + deltaColumn], side))
@@ -425,30 +430,29 @@ export function stringToPiece(piece: string): Type {
 //"rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR"
 //"8 8/n5P1/2p2r2/1P6/5k2/2QB4/1q6/1PP5/8"
 
-// var board: Board = new Board("8 8/n7/8/8/3q[a601]4/2pN[a301]4/2p5/8/8");
+// var board: Board = new Board("8 8/rnbqkbnr/pppppppp/8/8/8/8/P1PPPPPP/RP[a204]BQKBNR");
 // board.printBoard();
 
-// board.printValidSquares([3, 3]);
-
-// console.log(board.movePiece([4, 3], [2, 2]));
-
-// board.printBoard();
-
-// board.printValidSquares([3, 3]);
+// board.printValidSquares([7, 1]);
+// console.log(board.validMoves([7, 1]));
+// console.log(board.movePiece([7, 1], [5, 1]));
+// board.printValidSquares([5, 1]);
 
 
-// var piece: Piece = board.getBoardSetup()[3][3];
+// var piece: Piece = board.getBoardSetup()[7][1];
 // console.log(piece.getAttacks());
-// console.log(board.validMoves([3, 3]));
+// console.log(board.validMoves([7, 1]));
 // console.log(piece.getAbilities());
-// board.printValidSquares([3, 3]);
+// board.printValidSquares([7, 1]);
 
-// console.log(board.movePiece([3, 3], [2, 5]));
+// console.log(piece.setTimesUsed(Ability.LEAPER, 4));
+
+// console.log(board.movePiece([7, 1], [5, 0]));
 
 // board.printBoard();
-// console.log(board.validMoves([2, 5]));
+// console.log(board.validMoves([5, 0]));
 // console.log(piece.getAbilities());
-// board.printValidSquares([2, 5]);
+// board.printValidSquares([5, 0]);
 
 // console.log(board.movePiece([2, 5], [3, 3]));
 

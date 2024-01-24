@@ -77,15 +77,20 @@ export enum Type {
 export enum Ability {
     //Generic abilities that any piece can have [100-199]
     NONE = 0, // in case player chooses not to apply a new ability
+    SHIELD = 100, //TODO survives being captured (move that captures shielded piece gets undone and shield drops) 
+    INCREASE_CAPACITY = 101, // increases ability capacity by 1
+    INCREASE_CAPTURE_MULTIPLIER = 102, // increases capture multiplier by 0.1
     ANCHOR = 199, // disability, nerfs the the range of the piece to 2 squares for 3 turns
 
     //Pawn abilities [200-299]
     SCOUT = 200, // can advance twice in one turn
     QUANTUM_TUNNELING = 203, // can move through an enemy pawn (only through a pawn) behind it if the square is empty
+    BACKWARDS = 204, // can move one square backwards
 
     //Knight abilities [300-399]
     SMOLDERING = 301, // freezes enemy queen for a move
     CAMEL = 302, // can also move like a camel (3 steps in one direction and 1 to the side, long knight)
+    LEAPER = 303, // increases range of L attack by 1
 
     //Bishop abilities [400-499]
     COLOR_COMPLEX = 402, // can change color complex by moving one sqaure to the side, can't capture to the side, make it one time use
@@ -101,14 +106,16 @@ export enum Ability {
     //King abilities [700-799]
     SKIP = 700, // can skip a turn by moving on its own square
     ON_HORSE = 702, // can also move like a knight
-    ON_CAMEL = 705,
+    ON_CAMEL = 705, // can also move like a camel
 }
 
 export const DISABILITIES: Ability[] = [Ability.ANCHOR];
-export const PASSIVE_ABILITIES: Ability[] = [Ability.SMOLDERING, Ability.SWEEPER];
-export const PAWN_ABILITIES: Ability[] = [Ability.SCOUT, Ability.QUANTUM_TUNNELING];
+export const GENERIC_ABILITIES: Ability[] = [Ability.SHIELD, Ability.INCREASE_CAPACITY, Ability.INCREASE_CAPTURE_MULTIPLIER];
+export const PASSIVE_ABILITIES: Ability[] = [Ability.SHIELD, Ability.SMOLDERING, Ability.SWEEPER, Ability.LEAPER];
+
+export const PAWN_ABILITIES: Ability[] = [Ability.SCOUT, Ability.QUANTUM_TUNNELING, Ability.BACKWARDS];
 export const BISHOP_ABILITIES: Ability[] = [Ability.COLOR_COMPLEX, Ability.ARCHBISHOP];
-export const KNIGHT_ABILITIES: Ability[] = [Ability.SMOLDERING, Ability.CAMEL];
+export const KNIGHT_ABILITIES: Ability[] = [Ability.SMOLDERING, Ability.CAMEL, Ability.LEAPER];
 export const ROOK_ABILITIES: Ability[] = [Ability.HAS_PAWN, Ability.CHANCELLOR];
 export const QUEEN_ABILITIES: Ability[] = [Ability.SWEEPER];
 export const KING_ABILITIES: Ability[] = [Ability.SKIP, Ability.ON_HORSE, Ability.ON_CAMEL];
@@ -137,6 +144,12 @@ export function oppositeSide(piece: Piece, side: Side): Boolean {
     // True if the piece's side is opposite to the input side
     return piece.getSide() === Side.WHITE && side === Side.BLACK ||
         piece.getSide() === Side.BLACK && side === Side.WHITE;
+}
+
+export function oppositeColor(side: Side): Side {
+    if (side === Side.NONE)
+        return Side.NONE;
+    return side === Side.WHITE ? Side.BLACK : Side.WHITE;
 }
 
 export function stringToPiece(piece: string): [Type, Side] {
@@ -233,6 +246,7 @@ export default {
     Ability,
 
     DISABILITIES,
+    GENERIC_ABILITIES,
     PASSIVE_ABILITIES,
     PAWN_ABILITIES,
     BISHOP_ABILITIES,
@@ -245,6 +259,7 @@ export default {
     oppositeSidePiece,
     sameSide,
     oppositeSide,
+    oppositeColor,
     stringToPiece,
 
     isEmpty,
