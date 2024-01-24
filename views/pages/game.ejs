@@ -37,13 +37,19 @@
     let currentTurn = data.turn;
     let levelUpXp = data.levelUpXp;
     let game = new GameBundle.Game(1, 2, startingPosition);
+    console.log("Game: ")
+    console.log(game);
     let gameState = game.gameState;
     let board = gameState.board;
     let allAbilities = data.pieceAbilities;
     gameState.currentTurn = currentTurn;
 
-    for(let i=0; i<board.ROWS ;i++)   // copy piece stats from server, in case of a reconnection
-      for(let j=0; j<board.COLUMNS ;j++)
+    console.log("gameState: ")
+    console.log(gameState);
+    console.log("board: ")
+    console.log(board);
+    for(let i=0; i<board.rows ;i++)   // copy piece stats from server, in case of a reconnection
+      for(let j=0; j<board.columns ;j++)
       {
         board.boardSetup[i][j].currentXP = data.game.gameState.board.boardSetup[i][j].currentXP;
         board.boardSetup[i][j].level = data.game.gameState.board.boardSetup[i][j].level;
@@ -92,14 +98,14 @@
       background.setScale(this.sys.game.canvas.width / background.width, this.sys.game.canvas.height / background.height);
 
       let squareImageSize = this.textures.get('blackSquare').getSourceImage();
-      let squareSize = 0.8 * window.innerHeight / board.ROWS;     // vertical size of board always coveres 80% of the screen height
+      let squareSize = 0.8 * window.innerHeight / board.rows;     // vertical size of board always coveres 80% of the screen height
       let squareScale = squareSize / squareImageSize.width;
-      let boardPosition = {x: (window.innerWidth - squareSize * board.COLUMNS) / 2, y: (window.innerHeight - squareSize * board.ROWS) / 2}; // top left corner of the board
-      
+      let boardPosition = {x: (window.innerWidth - squareSize * board.columns) / 2, y: (window.innerHeight - squareSize * board.rows) / 2}; // top left corner of the board
 
-      for(let row = 0; row < board.ROWS; row++) {
+
+      for(let row = 0; row < board.rows; row++) {  //aici buba
         let currentRow = [];
-        for(let col = 0; col < board.COLUMNS; col++) {
+        for(let col = 0; col < board.columns; col++) {
           let color = (row + col) % 2 === 0 ? 'white' : 'black'; 
           let squareSprite = this.add.sprite(boardPosition.x + col * squareSize,boardPosition.y + row * squareSize, color + 'Square');
           squareSprite.setOrigin(0, 0); 
@@ -109,9 +115,13 @@
           squareSprite.x = boardPosition.x + col * squareSize; //test what happens when deleted
           squareSprite.y = boardPosition.y + row * squareSize;
           currentRow.push(squareSprite);
+          console.log("Test sprite: ");
+          console.log(squareSprite);
         }
         boardSquareSprites.push(currentRow);
       }
+      console.log("Test boardSquareSprites: ");
+      console.log(boardSquareSprites);
 
 
       for(let row of board.boardSetup) {
@@ -133,7 +143,7 @@
             if(playerPerspective === "WHITE")
               pieceSprite = this.add.sprite(boardSquareSprites[piece.initialSquare[0]][piece.initialSquare[1]].x, boardSquareSprites[piece.initialSquare[0]][piece.initialSquare[1]].y, pieceColor + pieceName);
             else
-              pieceSprite = this.add.sprite(boardSquareSprites[board.ROWS - piece.initialSquare[0] - 1][board.COLUMNS - piece.initialSquare[1] - 1].x, boardSquareSprites[board.ROWS - piece.initialSquare[0] - 1][board.COLUMNS - piece.initialSquare[1] - 1].y, pieceColor + pieceName);
+              pieceSprite = this.add.sprite(boardSquareSprites[board.rows - piece.initialSquare[0] - 1][board.columns - piece.initialSquare[1] - 1].x, boardSquareSprites[board.rows - piece.initialSquare[0] - 1][board.columns - piece.initialSquare[1] - 1].y, pieceColor + pieceName);
          
             pieceSprite.setOrigin(0, 0);
             pieceSprite.setScale(squareScale);
@@ -162,7 +172,7 @@
       graphics.fillStyle(fillColor);
       graphics.lineStyle(2, borderColor);
 
-      let statsTab = {x: boardPosition.x + board.COLUMNS * squareSize + 50, y: boardPosition.y, width: squareSize * 3, height: board.ROWS * squareSize};
+      let statsTab = {x: boardPosition.x + board.columns * squareSize + 50, y: boardPosition.y, width: squareSize * 3, height: board.rows * squareSize};
       graphics.fillRoundedRect(statsTab.x, statsTab.y, statsTab.width, statsTab.height, radius); 
       graphics.strokeRoundedRect(statsTab.x, statsTab.y, statsTab.width, statsTab.height, radius);
       
@@ -249,7 +259,7 @@
             cancelMove(this);
             return;
           }
-          if(pointer.x < boardPosition.x || pointer.x > boardPosition.x + squareSize * board.COLUMNS || pointer.y < boardPosition.y || pointer.y > boardPosition.y + squareSize * board.ROWS) // if the pointer is not on the board
+          if(pointer.x < boardPosition.x || pointer.x > boardPosition.x + squareSize * board.columns || pointer.y < boardPosition.y || pointer.y > boardPosition.y + squareSize * board.rows) // if the pointer is not on the board
           { // if the mouse is outside the board
             cancelMove(this);
             return;
@@ -259,7 +269,7 @@
           if(playerPerspective === "WHITE")
             targetSquareSprite = boardSquareSprites[Math.floor((pointer.y - boardPosition.y) / squareSize)][Math.floor((pointer.x - boardPosition.x) / squareSize)];
           else  // get actual square from memory representation, mirrored to the picked square
-            targetSquareSprite = boardSquareSprites[board.ROWS - Math.floor((pointer.y - boardPosition.y) / squareSize) - 1][board.COLUMNS - Math.floor((pointer.x - boardPosition.x) / squareSize) - 1];
+            targetSquareSprite = boardSquareSprites[board.rows - Math.floor((pointer.y - boardPosition.y) / squareSize) - 1][board.columns - Math.floor((pointer.x - boardPosition.x) / squareSize) - 1];
 
           let isValidMove = game.getGameState().movePiece([this.draggedPiece.row, this.draggedPiece.col], [targetSquareSprite.row, targetSquareSprite.col]); 
           if(!isValidMove)  // illegal move by game rules
@@ -276,8 +286,8 @@
           }
           else
           {
-            this.draggedPiece.x = boardSquareSprites[board.ROWS - targetSquareSprite.row - 1][board.COLUMNS - targetSquareSprite.col - 1].x;
-            this.draggedPiece.y = boardSquareSprites[board.ROWS - targetSquareSprite.row - 1][board.COLUMNS - targetSquareSprite.col - 1].y;
+            this.draggedPiece.x = boardSquareSprites[board.rows - targetSquareSprite.row - 1][board.columns - targetSquareSprite.col - 1].x;
+            this.draggedPiece.y = boardSquareSprites[board.rows - targetSquareSprite.row - 1][board.columns - targetSquareSprite.col - 1].y;
           }
           this.draggedPiece.row = targetSquareSprite.row;
           this.draggedPiece.col = targetSquareSprite.col;
@@ -338,13 +348,6 @@
             for(let i=selectedPiece.abilities.size; i < textAbility.length; i++)
               textAbility[i].setText('None');
 
-            let pieceName = ".";
-            if(selectedPiece.type === "p") pieceName = "Pawn";
-            else if(selectedPiece.type === "r") pieceName = "Rook";
-            else if(selectedPiece.type === "n") pieceName = "Knight";
-            else if(selectedPiece.type === "b") pieceName = "Bishop";
-            else if(selectedPiece.type === "q") pieceName = "Queen";
-            else if(selectedPiece.type === "k") pieceName = "King"; 
             selectedPieceImage.setTexture(selectedPiece.side.toLowerCase() + pieceName);
           }
 
@@ -381,8 +384,8 @@
         }
         else
         {
-          movedPiece.x = boardSquareSprites[board.ROWS - move.to[0] - 1][board.COLUMNS - move.to[1] - 1].x;
-          movedPiece.y = boardSquareSprites[board.ROWS - move.to[0] - 1][board.COLUMNS - move.to[1] - 1].y;
+          movedPiece.x = boardSquareSprites[board.rows - move.to[0] - 1][board.columns - move.to[1] - 1].x;
+          movedPiece.y = boardSquareSprites[board.rows - move.to[0] - 1][board.columns - move.to[1] - 1].y;
         }
         movedPiece.row = move.to[0];
         movedPiece.col = move.to[1];
@@ -413,8 +416,8 @@
       }
       else
       {
-        scene.draggedPiece.x = boardSquareSprites[board.ROWS - scene.startingSquare.row - 1][board.COLUMNS - scene.startingSquare.col - 1].x;
-        scene.draggedPiece.y = boardSquareSprites[board.ROWS - scene.startingSquare.row - 1][board.COLUMNS - scene.startingSquare.col - 1].y;
+        scene.draggedPiece.x = boardSquareSprites[board.rows - scene.startingSquare.row - 1][board.columns - scene.startingSquare.col - 1].x;
+        scene.draggedPiece.y = boardSquareSprites[board.rows - scene.startingSquare.row - 1][board.columns - scene.startingSquare.col - 1].y;
       }
       scene.draggedPiece.row = scene.startingSquare.row;
       scene.draggedPiece.col = scene.startingSquare.col;
