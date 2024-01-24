@@ -1,6 +1,7 @@
 import { Piece } from "./Piece";
 import Utils, { Direction, Ability, Type, Side } from "./Utils";
 
+
 export class Board {
     private fen: string;
     private rows: number;
@@ -27,6 +28,10 @@ export class Board {
 
     getBoardSetup(): Piece[][] {
         return this.boardSetup;
+    }
+
+    getFen(): string {
+        return this.fen;
     }
 
     private convertFen() {
@@ -119,12 +124,51 @@ export class Board {
         });
     }
 
-    //TODO finish updateFen()
+    /*//TODO finish updateFen()
     updateFen() {
         let newFen: string = "";
         this.fen.split("/").forEach((row, rowIndex) => {
             //TODO might have to look through every single row instead of just the ones where a piece moved to be compatible with pieces affecting other pieces (for example a piece applying a disability to another piece)
         });
+    }*/
+
+    //temporarily use the old one to test site
+    updateFen() {
+        let newFen: string = "";
+        this.fen.split("/").forEach((value, index) => {
+            //index - 1 because the first row starts at 0 and the first index, 0, represents information about the board size, etc.
+            if (index - 1 != this.getLastMove()[0][0] && index - 1 != this.getLastMove()[1][0])
+                //lastMove can be used. By knowing the rows from which the piece left and then landed, all the other rows can just be copied without any changes
+                newFen += value + "/";
+            else {
+                for (let piece of this.boardSetup[index - 1]) {
+                    if (piece.getType() != Type.EMPTY) {
+                        //Add the found piece in uppercase if it's a white piece, otherwise lowercase
+                        newFen += piece.getSide() === Side.WHITE ? piece.getType().toUpperCase() : piece.getType();
+                        if (piece.getAbilities().length > 0) {
+                            newFen += "[";
+                            for (let ability of piece.getAbilities()) {
+                                newFen += ability.toString();
+                            }
+                            newFen += "]";
+                        }
+                    }
+
+                    else {
+                        //If it gets here, an empty square was found
+                        if (isNaN(Number(newFen.slice(-1)))) //If the last character represents a piece
+                            newFen += "1"; //Add a 1 to represent the empty square
+                        else {
+                            //Otherwise it means there is another empty square to the left, so that number gets incrememnted
+                            let next: string = (Number(newFen.slice(-1)) + 1).toString();
+                            newFen = newFen.slice(0, -1) + next;
+                        }
+                    }
+                }
+                newFen += "/";
+            }
+        })
+        this.fen = newFen.slice(0, -1);
     }
 
     movePiece([fromRow, fromColumn]: [number, number], [toRow, toColumn]: [number, number]): Boolean {
@@ -373,6 +417,15 @@ export class Board {
     }
 
 }
+
+export function stringToPiece(piece: string): Type {
+    for (let type in Type) {
+        if (Type[type] === piece)
+            return Type[type];
+    }
+    return Type.EMPTY;
+}
+
 
 //"rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR"
 //"8 8/n5P1/2p2r2/1P6/5k2/2QB4/1q6/1PP5/8"

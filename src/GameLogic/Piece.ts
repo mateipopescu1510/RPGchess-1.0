@@ -428,6 +428,48 @@ export class Piece {
     isHighlighted() {
         return this.highlighted;
     }
+
+}
+
+export function oppositePiece(piece1: Piece, piece2: Piece): Boolean {
+    return piece1.getSide() === Side.WHITE && piece2.getSide() === Side.BLACK ||
+        piece1.getSide() === Side.BLACK && piece2.getSide() === Side.WHITE
+
+}
+
+export function oppositeSide(side1: Side, side2: Side): Boolean {
+    return side1 === Side.WHITE && side2 === Side.BLACK ||
+        side1 === Side.BLACK && side2 === Side.WHITE;
+}
+
+export function sameSidePiece(piece1: Piece, piece2: Piece): Boolean {
+    return piece1.getSide() === Side.WHITE && piece2.getSide() === Side.WHITE ||
+        piece1.getSide() === Side.BLACK && piece2.getSide() === Side.BLACK;
+}
+
+export function sameSide(side1: Side, side2: Side) {
+    return side1 === Side.WHITE && side2 === Side.WHITE ||
+        side1 === Side.BLACK && side2 === Side.BLACK;
+}
+
+export function isQueenOrRook(piece: Piece): Boolean {
+    return piece.getType() === Type.QUEEN || piece.getType() === Type.ROOK;
+}
+
+export function isQueenOrBishop(piece: Piece): Boolean {
+    return piece.getType() === Type.QUEEN || piece.getType() === Type.BISHOP;
+}
+
+export function isKnight(piece: Piece): Boolean {
+    return piece.getType() === Type.KNIGHT;
+}
+
+export function isPawn(piece: Piece): Boolean {
+    return piece.getType() === Type.PAWN;
+}
+
+export function isKing(piece: Piece) {
+    return piece.getType() === Type.KING;
 }
 
 // var piece: Piece = new Piece(Side.BLACK, Type.BISHOP, [0, 0], true, [[Ability.SMOLDERING, 0], [Ability.CAMEL, 1]]);
