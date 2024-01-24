@@ -1,6 +1,6 @@
 import { Direction, INFINITE_RANGE, INFINITE_TIME, Type, Side, GameResult } from './Utils';
 import { oppositeSide, Piece, sameSide } from './Piece'
-import { Board, stringToPiece } from './Board';
+import { Board } from './Board';
 import { GameState } from './GameState';
 
 export class Game {
@@ -31,6 +31,6 @@ export class Game {
     getGameState(): GameState {
         return this.gameState;
     }
-    
+
 
 }

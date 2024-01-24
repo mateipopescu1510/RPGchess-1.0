@@ -135,38 +135,43 @@ export class Board {
     //temporarily use the old one to test site
     updateFen() {
         let newFen: string = "";
-        this.fen.split("/").forEach((value, index) => {
-            //index - 1 because the first row starts at 0 and the first index, 0, represents information about the board size, etc.
-            if (index - 1 != this.getLastMove()[0][0] && index - 1 != this.getLastMove()[1][0])
-                //lastMove can be used. By knowing the rows from which the piece left and then landed, all the other rows can just be copied without any changes
-                newFen += value + "/";
-            else {
-                for (let piece of this.boardSetup[index - 1]) {
-                    if (piece.getType() != Type.EMPTY) {
-                        //Add the found piece in uppercase if it's a white piece, otherwise lowercase
+        console.log(this.fen.split("/"));
+        this.fen.split("/").forEach((row, rowIndex) => {
+            if (rowIndex)
+                for (let piece of this.boardSetup[rowIndex - 1]) {
+                    if (Utils.isNotEmpty(piece)) {
                         newFen += piece.getSide() === Side.WHITE ? piece.getType().toUpperCase() : piece.getType();
-                        if (piece.getAbilities().length > 0) {
-                            newFen += "[";
-                            for (let ability of piece.getAbilities()) {
-                                newFen += ability.toString();
-                            }
-                            newFen += "]";
-                        }
-                    }
+                        let pieceInformation: string = "";
 
+                        if (!piece.getCanLevelUp())
+                            pieceInformation += "X";
+                        if (piece.getAbilities().length > 0) {
+                            pieceInformation += "a";
+                            for (let ability of piece.getAbilities())
+                                pieceInformation += ability[0].toString();
+                        }
+                        if (piece.getXP())
+                            pieceInformation += "x" + piece.getXP().toString();
+                        if (piece.getLevel())
+                            pieceInformation += "l" + piece.getLevel().toString();
+
+                        if (pieceInformation.length > 0)
+                            pieceInformation = "[" + pieceInformation + "]";
+
+                        newFen += pieceInformation;
+                    }
                     else {
-                        //If it gets here, an empty square was found
-                        if (isNaN(Number(newFen.slice(-1)))) //If the last character represents a piece
-                            newFen += "1"; //Add a 1 to represent the empty square
+                        if (isNaN(Number(newFen.slice(-1))))
+                            newFen += "1";
                         else {
-                            //Otherwise it means there is another empty square to the left, so that number gets incrememnted
                             let next: string = (Number(newFen.slice(-1)) + 1).toString();
                             newFen = newFen.slice(0, -1) + next;
                         }
                     }
                 }
-                newFen += "/";
-            }
+            else
+                newFen += row;
+            newFen += "/";
         })
         this.fen = newFen.slice(0, -1);
     }
@@ -213,8 +218,7 @@ export class Board {
         this.boardSetup[toRow][toColumn].highlight();
         this.halfMoveCounter++;
 
-        //TODO finish updateFen()
-        //this.updateFen();
+        this.updateFen();
 
         return true;
     }
@@ -417,27 +421,26 @@ export class Board {
     }
 
 }
-
-export function stringToPiece(piece: string): Type {
-    for (let type in Type) {
-        if (Type[type] === piece)
-            return Type[type];
-    }
-    return Type.EMPTY;
-}
-
-
 //"rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR"
 //"8 8/n5P1/2p2r2/1P6/5k2/2QB4/1q6/1PP5/8"
 
 // var board: Board = new Board("8 8/rnbqkbnr/pppppppp/8/8/8/8/P1PPPPPP/RP[a204]BQKBNR");
 // board.printBoard();
-
+// console.log(board.getFen());
 // board.printValidSquares([7, 1]);
 // console.log(board.validMoves([7, 1]));
-// console.log(board.movePiece([7, 1], [5, 1]));
-// board.printValidSquares([5, 1]);
 
+// console.log(board.movePiece([7, 1], [5, 1]));
+
+// board.printValidSquares([5, 1]);
+// console.log(board.getFen());
+// console.log(board.getBoardSetup()[5][1].getAbilities());
+
+// console.log(board.movePiece([5, 1], [6, 1]));
+
+// board.printValidSquares([6, 1]);
+// console.log(board.getFen());
+// console.log(board.getBoardSetup()[6][1].getAbilities());
 
 // var piece: Piece = board.getBoardSetup()[7][1];
 // console.log(piece.getAttacks());

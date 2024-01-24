@@ -1,3 +1,8 @@
-Utils.js
-Piece.js
+node_modules/
+package-lock.json
+build/
 Board.js
+Utils.js 
+Piece.js
+GameState.js
+Game.js
