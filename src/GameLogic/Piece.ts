@@ -109,9 +109,6 @@ export class Piece {
             }
         }
 
-        // if (Utils.isNotEmpty(this))
-        //     this.possibleAbilities.push(...Utils.GENERIC_ABILITIES);
-
         this.abilities = [];
         this.setAbilities(abilities);
         this.totalXP = 0;
@@ -247,18 +244,21 @@ export class Piece {
         return this.abilities;
     }
     hasAbility(ability: Ability): Boolean {
-        let index: number = this.getAbilitiesNames().indexOf(ability);
+        let index: number = this.getAbilitiesIDs().indexOf(ability);
         return index !== -1;
     }
 
-    getAbilitiesNames(): Ability[] {
+    getAbilitiesIDs(): Ability[] {
         return this.abilities.map(([ability, _]) => ability);
+    }
+    getAbilitiesNames(): string[] {
+        return this.abilities.map(([ability, _]) => Ability[ability]);
     }
     getAbilitiesTimesUsed(): number[] {
         return this.abilities.map(([_, timesUsed]) => timesUsed);
     }
     setTimesUsed(ability: Ability, timesUsed: number): Boolean {
-        let index: number = this.getAbilitiesNames().indexOf(ability);
+        let index: number = this.getAbilitiesIDs().indexOf(ability);
         if (index === -1)
             return false;
 
@@ -266,14 +266,14 @@ export class Piece {
         return true;
     }
     timesUsed(ability: Ability): number {
-        let index: number = this.getAbilitiesNames().indexOf(ability);
+        let index: number = this.getAbilitiesIDs().indexOf(ability);
         if (index === -1)
             return -1;
 
         return this.abilities[index][1];
     }
     increaseTimesUsed(ability: Ability, passive: Boolean = false): Boolean {
-        let index: number = this.getAbilitiesNames().indexOf(ability);
+        let index: number = this.getAbilitiesIDs().indexOf(ability);
         if (index === -1)
             return false;
 
@@ -294,7 +294,7 @@ export class Piece {
     addAbility(ability: Ability, timesUsed: number = 0): Boolean {
         if (this.abilities.length === this.abilityCapacity && ability !== Ability.INCREASE_CAPACITY)
             return false;
-        if (this.getAbilitiesNames().indexOf(ability) !== -1 || this.possibleAbilities.indexOf(ability) === -1)
+        if (this.getAbilitiesIDs().indexOf(ability) !== -1 || this.possibleAbilities.indexOf(ability) === -1)
             return false;
 
         //TODO modify timesUsed into timesRemaining and have it count down to 0 until ability gets removed
@@ -337,7 +337,7 @@ export class Piece {
         return true;
     }
     removeAbility(ability: Ability): Boolean {
-        let index: number = this.getAbilitiesNames().indexOf(ability);
+        let index: number = this.getAbilitiesIDs().indexOf(ability);
         if (index === -1)
             return false;
 
@@ -354,6 +354,7 @@ export class Piece {
                 this.updateAttackRange(Direction.L, 1);
                 break;
             }
+            case Ability.CHANGE_COLOR:
             case Ability.SHIELD: {
                 return true;
             }
@@ -367,10 +368,15 @@ export class Piece {
     }
 
     //*POSSIBLE ABILITIES
-    getPossibleAbilities(): Array<Ability> {
+    getPossibleAbilitiesIDs(): Ability[] {
         if (this.abilities.length === this.abilityCapacity)
             return [Ability.INCREASE_CAPACITY];
         return this.possibleAbilities;
+    }
+    getPossibleAbilitiesNames(): string[] {
+        if (this.abilities.length === this.abilityCapacity)
+            return [Ability[Ability.INCREASE_CAPACITY]];
+        return this.possibleAbilities.map(abilityID => Ability[abilityID]);
     }
 
     //*XP
@@ -450,5 +456,4 @@ export class Piece {
     isHighlighted() {
         return this.highlighted;
     }
-
 }

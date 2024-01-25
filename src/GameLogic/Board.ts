@@ -127,7 +127,7 @@ export class Board {
         });
     }
 
-    updateFen() {
+    private updateFen() {
         let newFen: string = "";
         this.fen.split("/").forEach((row, rowIndex) => {
             if (rowIndex)
@@ -226,12 +226,11 @@ export class Board {
         return true;
     }
 
-    //Make private when done with testing
-    validMoves([row, column]: [number, number]): Array<[number, number, Ability]> {
+    private validMoves([row, column]: [number, number]): Array<[number, number, Ability]> {
         let moves: Array<[number, number, Ability]> = [];
         let piece: Piece = this.boardSetup[row][column];
         let side: Side = piece.getSide();
-        let abilities: Array<Ability> = piece.getAbilitiesNames();
+        let abilities: Array<Ability> = piece.getAbilitiesIDs();
         let attacks: Array<[Direction, number]> = piece.getAttacks();
 
         if (this.checkPassiveAbilities([row, column]))
@@ -299,7 +298,7 @@ export class Board {
                     moves.push([row + 2 * deltaRow, column, ability]);
                 return moves;
             }
-            case Ability.COLOR_COMPLEX: {
+            case Ability.CHANGE_COLOR: {
                 for (let deltaColumn of [-1, 1])
                     if (column > 0 && column < this.columns - 1 &&
                         Utils.isEmpty(this.boardSetup[row][column + deltaColumn]))

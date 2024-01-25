@@ -6,3 +6,5 @@ Utils.js
 Piece.js
 GameState.js
 Game.js
+Test.ts
+Test.js

@@ -35,7 +35,7 @@ export const ROOK_MAX_LEVEL = 10;
 export const QUEEN_MAX_LEVEL = 10;
 export const KING_MAX_LEVEL = 10;
 
-export const PER_MOVE_XP: number = 5;
+export const PER_MOVE_XP: number = 10;
 export const ABILITY_MAX_TIMES_USED: number = 5;
 export const PASSIVE_ABILITY_MAX_TIMES_USED: number = 5;
 
@@ -91,7 +91,7 @@ export enum Ability {
     LEAPER = 303, // increases range of L attack by 1
 
     //Bishop abilities [400-499]
-    COLOR_COMPLEX = 402, // can change color complex by moving one sqaure to the side, can't capture to the side, make it one time use
+    CHANGE_COLOR = 402, // can change color complex by moving one sqaure to the side, can't capture to the side, one time use
     ARCHBISHOP = 403, // can also move like a knight
 
     //Rook abilities [500-599]
@@ -112,7 +112,7 @@ export const GENERIC_ABILITIES: Ability[] = [Ability.INCREASE_CAPACITY, Ability.
 export const PASSIVE_ABILITIES: Ability[] = [Ability.SMOLDERING, Ability.SWEEPER, Ability.LEAPER, Ability.BOOST_ADJACENT_PIECES];
 
 export const PAWN_ABILITIES: Ability[] = [Ability.SCOUT, Ability.QUANTUM_TUNNELING, Ability.BACKWARDS];
-export const BISHOP_ABILITIES: Ability[] = [Ability.COLOR_COMPLEX, Ability.ARCHBISHOP];
+export const BISHOP_ABILITIES: Ability[] = [Ability.CHANGE_COLOR, Ability.ARCHBISHOP];
 export const KNIGHT_ABILITIES: Ability[] = [Ability.SMOLDERING, Ability.CAMEL, Ability.LEAPER];
 export const ROOK_ABILITIES: Ability[] = [Ability.HAS_PAWN, Ability.CHANCELLOR];
 export const QUEEN_ABILITIES: Ability[] = [Ability.SWEEPER, Ability.BOOST_ADJACENT_PIECES];
