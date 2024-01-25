@@ -35,6 +35,7 @@ export class Piece {
         this.canLevelUp = canLevelUp;
         this.XP = XP;
         this.level = level;
+        this.possibleAbilities = []
 
         switch (this.type) {
             case Type.PAWN: {
@@ -43,7 +44,8 @@ export class Piece {
                 this.captureMultiplier = Utils.PAWN_CAPTURE_MULTIPLIER;
                 this.abilityCapacity = Utils.PAWN_DEFAULT_ABILITY_CAPACITY;
                 this.maxLevel = Utils.PAWN_MAX_LEVEL;
-                this.possibleAbilities = Utils.PAWN_ABILITIES;
+                this.possibleAbilities.push(...Utils.PAWN_ABILITIES);
+                this.possibleAbilities.push(...Utils.GENERIC_ABILITIES);
                 break;
             }
             case Type.BISHOP: {
@@ -52,7 +54,8 @@ export class Piece {
                 this.captureMultiplier = Utils.BISHOP_CAPTURE_MULTIPLIER;
                 this.abilityCapacity = Utils.BISHOP_DEFAULT_ABILITY_CAPACITY;
                 this.maxLevel = Utils.BISHOP_MAX_LEVEL;
-                this.possibleAbilities = Utils.BISHOP_ABILITIES;
+                this.possibleAbilities.push(...Utils.BISHOP_ABILITIES);
+                this.possibleAbilities.push(...Utils.GENERIC_ABILITIES);
                 break;
             }
             case Type.KNIGHT: {
@@ -61,7 +64,8 @@ export class Piece {
                 this.captureMultiplier = Utils.KNIGHT_CAPTURE_MULTIPLIER;
                 this.abilityCapacity = Utils.KNIGHT_DEFAULT_ABILITY_CAPACITY;
                 this.maxLevel = Utils.KNIGHT_MAX_LEVEL;
-                this.possibleAbilities = Utils.KNIGHT_ABILITIES;
+                this.possibleAbilities.push(...Utils.KNIGHT_ABILITIES);
+                this.possibleAbilities.push(...Utils.GENERIC_ABILITIES);
                 break;
             }
             case Type.ROOK: {
@@ -70,7 +74,8 @@ export class Piece {
                 this.captureMultiplier = Utils.ROOK_CAPTURE_MULTIPLIER;
                 this.abilityCapacity = Utils.ROOK_DEFAULT_ABILITY_CAPACITY;
                 this.maxLevel = Utils.ROOK_MAX_LEVEL;
-                this.possibleAbilities = Utils.ROOK_ABILITIES;
+                this.possibleAbilities.push(...Utils.ROOK_ABILITIES);
+                this.possibleAbilities.push(...Utils.GENERIC_ABILITIES);
                 break;
             }
             case Type.QUEEN: {
@@ -79,7 +84,8 @@ export class Piece {
                 this.captureMultiplier = Utils.QUEEN_CAPTURE_MULTIPLIER;
                 this.abilityCapacity = Utils.QUEEN_DEFAULT_ABILITY_CAPACITY;
                 this.maxLevel = Utils.QUEEN_MAX_LEVEL;
-                this.possibleAbilities = Utils.QUEEN_ABILITIES;
+                this.possibleAbilities.push(...Utils.QUEEN_ABILITIES);
+                this.possibleAbilities.push(...Utils.GENERIC_ABILITIES);
                 break;
             }
             case Type.KING: {
@@ -88,7 +94,8 @@ export class Piece {
                 this.captureMultiplier = Utils.KING_CAPTURE_MULTIPLIER;
                 this.abilityCapacity = Utils.KING_DEFAULT_ABILITY_CAPACITY;
                 this.maxLevel = Utils.KING_MAX_LEVEL;
-                this.possibleAbilities = Utils.KING_ABILITIES;
+                this.possibleAbilities.push(...Utils.KING_ABILITIES);
+                this.possibleAbilities.push(...Utils.GENERIC_ABILITIES);
                 break;
             }
             default: {
@@ -102,8 +109,8 @@ export class Piece {
             }
         }
 
-        if (Utils.isNotEmpty(this))
-            this.possibleAbilities.push(...Utils.GENERIC_ABILITIES);
+        // if (Utils.isNotEmpty(this))
+        //     this.possibleAbilities.push(...Utils.GENERIC_ABILITIES);
 
         this.abilities = [];
         this.setAbilities(abilities);
@@ -286,7 +293,7 @@ export class Piece {
         if (this.getAbilitiesNames().indexOf(ability) !== -1 || this.possibleAbilities.indexOf(ability) === -1)
             return false;
 
-        //TODO modify timesUsed into timeRemaining and have it count down to 0 until ability gets removed
+        //TODO modify timesUsed into timesRemaining and have it count down to 0 until ability gets removed
         timesUsed = 0;
 
         switch (ability) {
@@ -306,6 +313,14 @@ export class Piece {
             }
             case Ability.LEAPER: {
                 this.updateAttackRange(Direction.L, 2);
+                break;
+            }
+            case Ability.ON_CAMEL: {
+                this.removeAbility(Ability.ON_HORSE);
+                break;
+            }
+            case Ability.ON_HORSE: {
+                this.removeAbility(Ability.ON_CAMEL);
                 break;
             }
             default: {
@@ -345,6 +360,8 @@ export class Piece {
 
     //*POSSIBLE ABILITIES
     getPossibleAbilities(): Array<Ability> {
+        if (this.abilities.length === this.abilityCapacity)
+            return [Ability.INCREASE_CAPACITY];
         return this.possibleAbilities;
     }
 

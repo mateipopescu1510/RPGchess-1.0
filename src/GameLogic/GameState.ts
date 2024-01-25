@@ -9,7 +9,7 @@ export class GameState {
     private timeBlack: number;
     private gameResult: GameResult;
 
-    constructor(fen: string, currentTurn: number, timeWhite: number, timeBlack: number, pseudoLegal: Boolean = false) {
+    constructor(fen: string, currentTurn: number, timeWhite: number, timeBlack: number) {
         this.board = new Board(fen);
         this.currentTurn = currentTurn;
         this.timeWhite = timeWhite;

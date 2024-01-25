@@ -114,6 +114,9 @@ export class Board {
 
                         this.boardSetup[rowIndex - 1][column] = new Piece(side, type, [rowIndex - 1, column], canLevelUp, abilities, XP, level);
 
+                        if (type === Type.KING)
+                            side === Side.WHITE ? this.whiteKingPosition = [rowIndex - 1, column] : this.blackKingPosition = [rowIndex - 1, column];
+
                         column++;
                     }
                     else {
@@ -131,6 +134,7 @@ export class Board {
                 for (let piece of this.boardSetup[rowIndex - 1]) {
                     if (Utils.isNotEmpty(piece)) {
                         newFen += piece.getSide() === Side.WHITE ? piece.getType().toUpperCase() : piece.getType();
+
                         let pieceInformation: string = "";
 
                         if (!piece.getCanLevelUp())
@@ -196,10 +200,10 @@ export class Board {
 
         this.mustLevelUpCoordinates = this.boardSetup[toRow][toColumn].addXP(capturedPieceXP) ? [toRow, toColumn] : [-1, -1];
 
-        //TODO check for pawn promotion
-
         if (fromRow !== toRow || fromColumn !== toColumn)
             this.boardSetup[fromRow][fromColumn] = new Piece(); //Create empty square on the square the piece moved from
+
+        //TODO check for pawn promotion
 
         if (this.boardSetup[toRow][toColumn].getType() === Type.KING)
             this.boardSetup[toRow][toColumn].getSide() === Side.WHITE ? this.whiteKingPosition = [toRow, toColumn] : this.blackKingPosition = [toRow, toColumn];
@@ -207,6 +211,9 @@ export class Board {
         //If the move was made using an ability, increment the piece's move counter as long as the times used of that ability
         let abilityUsed: Ability = moves[moveIndex][2];
         abilityUsed === Ability.NONE ? this.boardSetup[toRow][toColumn].incrementMoveCounter() : this.boardSetup[toRow][toColumn].incrementMoveCounter(abilityUsed);
+
+        if (Utils.isKing(this.boardSetup[toRow][toColumn]))
+            this.boardSetup[toRow][toColumn].getSide() === Side.WHITE ? this.whiteKingPosition = [toRow, toColumn] : this.blackKingPosition = [toRow, toColumn];
 
         //Highlight this move's source and destination squares
         this.boardSetup[fromRow][fromColumn].highlight();
@@ -294,10 +301,13 @@ export class Board {
                         moves.push([row, column + deltaColumn, ability]);
                 return moves;
             }
-            case Ability.ARCHBISHOP || Ability.CHANCELLOR || Ability.ON_HORSE: {
+            case Ability.ARCHBISHOP:
+            case Ability.CHANCELLOR:
+            case Ability.ON_HORSE: {
                 return this.checkAttacks([row, column], side, [Direction.L, 1], ability);
             }
-            case Ability.CAMEL || Ability.ON_CAMEL: {
+            case Ability.CAMEL:
+            case Ability.ON_CAMEL: {
                 return this.checkAttacks([row, column], side, [Direction.CAMEL, 1], ability)
             }
             case Ability.HAS_PAWN: {
@@ -422,6 +432,14 @@ export class Board {
         console.log(board);
     }
 
+    getWhiteKingPosition(): [number, number] {
+        return this.whiteKingPosition;
+    }
+
+    getBlackKingPosition(): [number, number] {
+        return this.blackKingPosition;
+    }
+
     getLevelUpCoordinates(): [number, number] {
         return this.mustLevelUpCoordinates;
     }
@@ -435,29 +453,24 @@ export class Board {
     }
 
 }
-//"rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR"
+//"8 8/rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR"
 //"8 8/n5P1/2p2r2/1P6/5k2/2QB4/1q6/1PP5/8"
 
-// var board: Board = new Board("8 8/8/8/3BR3/8/4Q[a602]3/8/8/8");
+// var board: Board = new Board("8 8/rnbqkbnr/pppppppp/8/8/4K[a705]3/8/PPPPPPPP/RNBQ1BNR");
+// var king: Piece = board.getBoardSetup()[4][4];
 
-// var queen: Piece = board.getBoardSetup()[4][4];
-// var bishop: Piece = board.getBoardSetup()[2][3];
-// var rook: Piece = board.getBoardSetup()[2][4];
 
-// board.printBoard();
-// console.log(queen.getAbilities());
-// console.log(bishop.getCaptureMultiplier(), rook.getCaptureMultiplier());
-
-// console.log(board.movePiece([4, 4], [2, 2]));
 
 // board.printBoard();
-// console.log(queen.getAbilities());
-// console.log(bishop.getCaptureMultiplier(), rook.getCaptureMultiplier());
+// board.printValidSquares([4, 4]);
+// console.log(board.getBoardSetup()[4][4].getAbilities());
+// console.log(board.getBoardSetup()[4][4].getPossibleAbilities());
 
-// console.log(board.movePiece([2, 2], [5, 5]));
+// console.log(king.addAbility(Ability.INCREASE_CAPACITY));
+// console.log(king.addAbility(Ability.ON_HORSE));
+// console.log(board.movePiece([4, 4], [3, 3]));
+
 
 // board.printBoard();
-// console.log(queen.getAbilities());
-// console.log(bishop.getCaptureMultiplier(), rook.getCaptureMultiplier());
-
+// board.printValidSquares([3, 3]);
 
