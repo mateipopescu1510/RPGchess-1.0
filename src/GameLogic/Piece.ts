@@ -272,16 +272,20 @@ export class Piece {
 
         return this.abilities[index][1];
     }
-    private increaseTimesUsed(ability: Ability): Boolean {
+    increaseTimesUsed(ability: Ability, passive: Boolean = false): Boolean {
         let index: number = this.getAbilitiesNames().indexOf(ability);
         if (index === -1)
             return false;
 
+        let maxTimesUsed: number = passive ? Utils.PASSIVE_ABILITY_MAX_TIMES_USED : Utils.ABILITY_MAX_TIMES_USED;
         this.abilities[index][1]++;
 
-        if (Utils.PASSIVE_ABILITIES.indexOf(ability) !== -1 &&
-            this.timesUsed(ability) >= Utils.PASSIVE_ABILITY_MAX_TIMES_USED)
+        if (this.timesUsed(ability) >= maxTimesUsed)
             this.removeAbility(ability);
+
+        // if (Utils.PASSIVE_ABILITIES.indexOf(ability) !== -1 &&
+        //     this.timesUsed(ability) >= Utils.PASSIVE_ABILITY_MAX_TIMES_USED)
+        //     this.removeAbility(ability);
 
         return true;
     }
@@ -294,7 +298,7 @@ export class Piece {
             return false;
 
         //TODO modify timesUsed into timesRemaining and have it count down to 0 until ability gets removed
-        timesUsed = 0;
+        // timesUsed = 0;
 
         switch (ability) {
             case Ability.INCREASE_CAPACITY: {
@@ -337,6 +341,8 @@ export class Piece {
         if (index === -1)
             return false;
 
+        this.abilities.splice(index, 1);
+
         switch (ability) {
             case Ability.SWEEPER: {
                 this.removeAttack(Direction.L);
@@ -348,12 +354,14 @@ export class Piece {
                 this.updateAttackRange(Direction.L, 1);
                 break;
             }
+            case Ability.SHIELD: {
+                return true;
+            }
             default: {
                 break;
             }
         }
 
-        this.abilities.splice(index, 1);
         this.possibleAbilities.push(ability);
         return true;
     }
@@ -421,7 +429,7 @@ export class Piece {
 
         for (let passiveAbility of Utils.PASSIVE_ABILITIES)
             if (this.hasAbility(passiveAbility))
-                this.increaseTimesUsed(passiveAbility);
+                this.increaseTimesUsed(passiveAbility, true);
 
         if (ability !== Ability.NONE)
             this.increaseTimesUsed(ability);
@@ -444,56 +452,3 @@ export class Piece {
     }
 
 }
-
-export function oppositePiece(piece1: Piece, piece2: Piece): Boolean {
-    return piece1.getSide() === Side.WHITE && piece2.getSide() === Side.BLACK ||
-        piece1.getSide() === Side.BLACK && piece2.getSide() === Side.WHITE
-
-}
-
-export function oppositeSide(side1: Side, side2: Side): Boolean {
-    return side1 === Side.WHITE && side2 === Side.BLACK ||
-        side1 === Side.BLACK && side2 === Side.WHITE;
-}
-
-export function sameSidePiece(piece1: Piece, piece2: Piece): Boolean {
-    return piece1.getSide() === Side.WHITE && piece2.getSide() === Side.WHITE ||
-        piece1.getSide() === Side.BLACK && piece2.getSide() === Side.BLACK;
-}
-
-export function sameSide(side1: Side, side2: Side) {
-    return side1 === Side.WHITE && side2 === Side.WHITE ||
-        side1 === Side.BLACK && side2 === Side.BLACK;
-}
-
-export function isQueenOrRook(piece: Piece): Boolean {
-    return piece.getType() === Type.QUEEN || piece.getType() === Type.ROOK;
-}
-
-export function isQueenOrBishop(piece: Piece): Boolean {
-    return piece.getType() === Type.QUEEN || piece.getType() === Type.BISHOP;
-}
-
-export function isKnight(piece: Piece): Boolean {
-    return piece.getType() === Type.KNIGHT;
-}
-
-export function isPawn(piece: Piece): Boolean {
-    return piece.getType() === Type.PAWN;
-}
-
-export function isKing(piece: Piece) {
-    return piece.getType() === Type.KING;
-}
-
-// var piece: Piece = new Piece(Side.BLACK, Type.BISHOP, [0, 0], true, [[Ability.SMOLDERING, 0], [Ability.CAMEL, 1]]);
-// console.log(piece.getAbilities());
-// console.log(piece.getPossibleAbilities());
-
-// console.log(piece.addAbility(Ability.ARCHBISHOP));
-// console.log(piece.getAbilities());
-// console.log(piece.getPossibleAbilities());
-
-// console.log(piece.removeAbility(Ability.ARCHBISHOP));
-// console.log(piece.getAbilities());
-// console.log(piece.getPossibleAbilities());

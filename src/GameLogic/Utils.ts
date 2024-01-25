@@ -38,7 +38,6 @@ export const KING_MAX_LEVEL = 10;
 export const PER_MOVE_XP: number = 5;
 export const ABILITY_MAX_TIMES_USED: number = 5;
 export const PASSIVE_ABILITY_MAX_TIMES_USED: number = 5;
-export const DISABILITY_MAX_TIMES_USED: number = 3;
 
 
 export enum GameResult {
@@ -79,6 +78,7 @@ export enum Ability {
     NONE = 0, // in case player chooses not to apply a new ability 
     INCREASE_CAPACITY = 101, // increases ability capacity by 1
     INCREASE_CAPTURE_MULTIPLIER = 102, // increases capture multiplier by 0.2
+    SHIELD = 103, // piece survives being captured (move doesn't happen, shield drops) - one time use per piece
 
     //Pawn abilities [200-299]
     SCOUT = 200, // can advance twice in one turn
@@ -108,7 +108,7 @@ export enum Ability {
     ON_CAMEL = 705, // can also move like a camel
 }
 
-export const GENERIC_ABILITIES: Ability[] = [Ability.INCREASE_CAPACITY, Ability.INCREASE_CAPTURE_MULTIPLIER];
+export const GENERIC_ABILITIES: Ability[] = [Ability.INCREASE_CAPACITY, Ability.INCREASE_CAPTURE_MULTIPLIER, Ability.SHIELD];
 export const PASSIVE_ABILITIES: Ability[] = [Ability.SMOLDERING, Ability.SWEEPER, Ability.LEAPER, Ability.BOOST_ADJACENT_PIECES];
 
 export const PAWN_ABILITIES: Ability[] = [Ability.SCOUT, Ability.QUANTUM_TUNNELING, Ability.BACKWARDS];
@@ -169,6 +169,12 @@ export function isEmpty(piece: Piece): Boolean {
 }
 export function isNotEmpty(piece: Piece): Boolean {
     return piece.getType() !== Type.EMPTY;
+}
+export function isWhite(piece: Piece): Boolean {
+    return piece.getSide() === Side.WHITE;
+}
+export function isBlack(piece: Piece): Boolean {
+    return piece.getSide() === Side.BLACK;
 }
 export function isPawn(piece: Piece): Boolean {
     return piece.getType() === Type.PAWN;
@@ -240,7 +246,6 @@ export default {
     PER_MOVE_XP,
     ABILITY_MAX_TIMES_USED,
     PASSIVE_ABILITY_MAX_TIMES_USED,
-    DISABILITY_MAX_TIMES_USED,
 
     GameResult,
     Direction,
@@ -267,6 +272,8 @@ export default {
 
     isEmpty,
     isNotEmpty,
+    isWhite,
+    isBlack,
     isPawn,
     isBishop,
     isKnight,
@@ -280,4 +287,3 @@ export default {
     hasPawnAttack,
     hasCamelAttack,
 }
-

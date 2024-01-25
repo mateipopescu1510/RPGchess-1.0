@@ -190,9 +190,8 @@ export class Board {
 
         this.movesList.push([[fromRow, fromColumn], [toRow, toColumn], this.boardSetup[fromRow][fromColumn], this.boardSetup[toRow][toColumn]]);
 
-        //If certain special conditions aren't met before the move is made, exit without executing the move
-        // if (this.checkSpecialConditionsBeforeMove([fromRow, fromColumn]))
-        //     return true;
+        if (this.checkSpecialConditionsBeforeMove([fromRow, fromColumn], [toRow, toColumn]))
+            return true;
 
         let capturedPieceXP: number = this.boardSetup[toRow][toColumn].getTotalXP();
 
@@ -247,11 +246,17 @@ export class Board {
         return moves;
     }
 
-    // private checkSpecialConditionsBeforeMove([row, column]: [number, number]): Boolean {
-    //     return false;
-    // }
+    private checkSpecialConditionsBeforeMove([fromRow, fromColumn]: [number, number], [toRow, toColumn]: [number, number]): Boolean {
+        //Check if special conditions don't allow the piece to move to the target square (so far, the only special conditon is the capture of a piece with shield)
+        if (this.boardSetup[toRow][toColumn].hasAbility(Ability.SHIELD)) {
+            this.boardSetup[toRow][toColumn].removeAbility(Ability.SHIELD);
+            return true;
+        }
+        return false;
+    }
 
     private checkSpecialConditionsAfterMove([row, column]: [number, number]) {
+        //Check if special conditons apply to the piece after the move is on the board (so far, the only special condition is the queen boosting the acpture multiplier of neighboring piece if it has the ability)
         if (this.boardSetup[row][column].hasAbility(Ability.BOOST_ADJACENT_PIECES)) {
             let delta: Array<[number, number]> = [[1, 0], [-1, 0], [0, 1], [0, -1], [1, 1], [-1, 1], [1, -1], [-1, -1]];
             for (let [deltaRow, deltaColumn] of delta)
@@ -444,6 +449,10 @@ export class Board {
         return this.mustLevelUpCoordinates;
     }
 
+    getPieceAt([row, column]): Piece {
+        return this.boardSetup[row][column];
+    }
+
     mustLevelUp(): Boolean {
         return this.mustLevelUpCoordinates[0] !== -1 && this.mustLevelUpCoordinates[1] !== -1;
     }
@@ -451,26 +460,6 @@ export class Board {
     levelUpDone() {
         this.mustLevelUpCoordinates = [-1, -1];
     }
-
 }
 //"8 8/rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR"
 //"8 8/n5P1/2p2r2/1P6/5k2/2QB4/1q6/1PP5/8"
-
-// var board: Board = new Board("8 8/rnbqkbnr/pppppppp/8/8/4K[a705]3/8/PPPPPPPP/RNBQ1BNR");
-// var king: Piece = board.getBoardSetup()[4][4];
-
-
-
-// board.printBoard();
-// board.printValidSquares([4, 4]);
-// console.log(board.getBoardSetup()[4][4].getAbilities());
-// console.log(board.getBoardSetup()[4][4].getPossibleAbilities());
-
-// console.log(king.addAbility(Ability.INCREASE_CAPACITY));
-// console.log(king.addAbility(Ability.ON_HORSE));
-// console.log(board.movePiece([4, 4], [3, 3]));
-
-
-// board.printBoard();
-// board.printValidSquares([3, 3]);
-

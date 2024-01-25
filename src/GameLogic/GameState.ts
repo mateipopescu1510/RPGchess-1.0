@@ -4,7 +4,7 @@ import Utils, { Direction, Ability, Type, Side, GameResult } from "./Utils";
 
 export class GameState {
     private board: Board;
-    private currentTurn: number;
+    private currentTurn: number; // 0 for white, 1 for black
     private timeWhite: number;
     private timeBlack: number;
     private gameResult: GameResult;
@@ -22,6 +22,10 @@ export class GameState {
             return false;
 
         if (this.board.mustLevelUp())
+            return false;
+
+        if (this.currentTurn === 0 && !Utils.isWhite(this.board.getPieceAt(from)) ||
+            this.currentTurn === 1 && !Utils.isBlack(this.board.getPieceAt(from)))
             return false;
 
         if (!this.board.movePiece(from, to))
@@ -59,6 +63,10 @@ export class GameState {
         return false;
     }
 
+    printBoard() {
+        this.board.printBoard();
+    }
+
     getBoard(): Board {
         return this.board;
     }
@@ -75,5 +83,13 @@ export class GameState {
     private checkmate(): Boolean {
         return false;
     }
-
 }
+
+// var gameState: GameState = new GameState("8 8/8/8/2r[a103]5/8/4Q3/8/8/8", 0, -1, -1);
+// gameState.printBoard();
+// console.log(gameState.getBoard().getPieceAt([2, 2]).getAbilities());
+
+// console.log(gameState.movePiece([4, 4], [2, 2]), gameState.getTurn());
+
+// gameState.printBoard();
+// console.log(gameState.getBoard().getPieceAt([2, 2]).getAbilities());
