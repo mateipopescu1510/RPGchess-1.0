@@ -52,7 +52,7 @@ export class GameState {
 
         if (piece.addAbility(ability)) {
             piece.increaseLevel();
-            // this.board.updateFen();
+            this.board.updateFen();
             this.board.levelUpDone();
             return true;
         }

@@ -132,7 +132,7 @@ export class Board {
         });
     }*/
 
-    //temporarily use the old one to test site
+
     updateFen() {
         let newFen: string = "";
         console.log(this.fen.split("/"));
