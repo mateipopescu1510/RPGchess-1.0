@@ -177,7 +177,7 @@
       let textXP = this.add.text(statsTab.x + 10, selectedPieceImage.y + squareSize / 2 + 50, 'XP: 0/' + levelUpXp['KING_LEVELUP_XP'][0], { fontFamily: 'Arial', fontSize: 20, color: '#000000' });
       let textAbilities = this.add.text(statsTab.x + 10, selectedPieceImage.y + squareSize / 2 + 80, 'Abilities: ', { fontFamily: 'Arial', fontSize: 20, color: '#000000' });
       let textAbility = [];
-      for(let i = 0; i < 4; i++)
+      for(let i = 0; i < data.KING_DEFAULT_ABILITY_CAPACITY; i++)
         textAbility.push(this.add.text(statsTab.x + 10, selectedPieceImage.y + squareSize / 2 + 110 + i * 30, 'NONE', { fontFamily: 'Arial', fontSize: 20, color: '#000000' }));
       
       // return to menu button
@@ -207,21 +207,26 @@
         if(this.draggedPiece != undefined)
         {
           let selectedPiece = board.boardSetup[this.draggedPiece.row][this.draggedPiece.col];
-
+          
           let pieceName = ".";
           if(selectedPiece.type === "p") pieceName = "Pawn";
-          else if(selectedPiece.type === "r") pieceName = "Rook";
-          else if(selectedPiece.type === "n") pieceName = "Knight";
+          else if(selectedPiece.type === "r") pieceName = "Rook"; 
+          else if(selectedPiece.type === "n") pieceName = "Knight"; 
           else if(selectedPiece.type === "b") pieceName = "Bishop";
           else if(selectedPiece.type === "q") pieceName = "Queen";
-          else if(selectedPiece.type === "k") pieceName = "King"; 
+          else if(selectedPiece.type === "k") pieceName = "King";
           selectedPieceImage.setTexture(selectedPiece.side.toLowerCase() + pieceName);
-
+          let currCapacity = selectedPiece.getAbilityCapacity();
+          for (let text of textAbility)
+            text.destroy();
+          textAbility.length = 0;
+          for(let i = 0; i < currCapacity; i++)
+            textAbility.push(this.add.text(statsTab.x + 10, selectedPieceImage.y + squareSize / 2 + 110 + i * 30, 'NONE', { fontFamily: 'Arial', fontSize: 20, color: '#000000' }));
           textLevel.setText('Level: ' + (selectedPiece.level + 1 ));
           textXP.setText('XP: ' + selectedPiece.XP + '/' + levelUpXp[pieceName.toUpperCase() + '_LEVELUP_XP'][selectedPiece.level]);
           let pieceAbilities = selectedPiece.abilities;
-          console.log("selected piece abilities: ");
-          console.log(selectedPiece.abilities);
+          console.log("current piece abilities: ");
+          console.log(pieceAbilities);
           for(let idx in pieceAbilities){
             let currAbility = pieceAbilities[idx];
             textAbility[idx].setText(allAbilities[currAbility[0]]);
@@ -318,13 +323,13 @@
             if(selectedPiece.XP >= levelUpXp[pieceName.toUpperCase() + '_LEVELUP_XP'][selectedPiece.level])
             {
               
-              let possibleAbilities = selectedPiece.getPossibleAbilities();
-              let chooseAbilityText = this.add.text(textAbility[3].x, textAbility[3].y + 20, "Choose an ability to learn", {fontFamily: 'Arial', fontSize: 24, color: '#000000'});
+              let possibleAbilities = selectedPiece.getPossibleAbilitiesIDs();
+              let chooseAbilityText = this.add.text(textAbility[textAbility.length-1].x, textAbility[textAbility.length-1].y + 20, "Choose an ability to learn", {fontFamily: 'Arial', fontSize: 24, color: '#000000'});
               let chooseAbility = [];
               for(let idx in possibleAbilities)
               {
                 let abilityId = possibleAbilities[idx];
-                let abilityButton = this.add.text(textAbility[3].x, textAbility[3].y + 50 + idx * 30, allAbilities[abilityId], {fontFamily: 'Arial', fontSize: 24, color: '#000000'});
+                let abilityButton = this.add.text(textAbility[textAbility.length-1].x, textAbility[textAbility.length-1].y + 50 + idx * 30, allAbilities[abilityId], {fontFamily: 'Arial', fontSize: 24, color: '#000000'});
                 abilityButton.setInteractive();
                 chooseAbility.push(abilityButton);
                 abilityButton.on('pointerdown', () => {
@@ -333,11 +338,6 @@
                   for(let button of chooseAbility)
                     button.destroy();
                   gameState.levelUp(allAbilities[abilityId]);
-                  if (abilityId == 101)     //add capacity ability
-                    textAbility.push(this.add.text(statsTab.x + 10, selectedPieceImage.y + squareSize / 2 + 110 + textAbility.length * 30, 'NONE', { fontFamily: 'Arial', fontSize: 20, color: '#000000' }));
-                  console.log("inside levelup test:");
-                  console.log(textAbility.length);
-                  console.log(abilityId);
                 });
               }
             }
@@ -350,11 +350,14 @@
               let currAbility = pieceAbilities[idx];
               textAbility[idx].setText(allAbilities[currAbility[0]]);
             }
-              
+            console.log("textAbility before:");
+            console.log(textAbility);
             for(let i=selectedPiece.abilities.size; i < textAbility.length; i++)
-              textAbility[i].setText('NONE');
+              textAbility[i].setText('CUCU');
 
             selectedPieceImage.setTexture(selectedPiece.side.toLowerCase() + pieceName);
+            console.log("textAbility after:");
+            console.log(textAbility);
           }
 
           if(gameState.checkmate())

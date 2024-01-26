@@ -10,7 +10,7 @@ import * as login from './loginValidation';
 import * as gameSocket from './gameSocket';
 import * as matchmaking from './matchmaking';
 import { gamesInProgress } from "./gameSocket";
-import { PAWN_LEVELUP_XP, BISHOP_LEVELUP_XP, KNIGHT_LEVELUP_XP, ROOK_LEVELUP_XP, QUEEN_LEVELUP_XP, KING_LEVELUP_XP, Ability } from '../GameLogic/Utils';
+import { PAWN_LEVELUP_XP, BISHOP_LEVELUP_XP, KNIGHT_LEVELUP_XP, ROOK_LEVELUP_XP, QUEEN_LEVELUP_XP, KING_LEVELUP_XP, Ability, KING_DEFAULT_ABILITY_CAPACITY } from '../GameLogic/Utils';
 
 const app = express();
 const server = http.createServer(app);
@@ -40,13 +40,13 @@ app.get('/boardstate', (req, res) => {
     let gameId = req.query.gameId as string;
     let game = gamesInProgress.get(gameId)!;
     let LEVEL_UP_XP : Map<String, number[]> = new Map();
-    LEVEL_UP_XP['PAWN_LEVELUP_XP'] = PAWN_LEVELUP_XP;
-    LEVEL_UP_XP['BISHOP_LEVELUP_XP'] = BISHOP_LEVELUP_XP;
-    LEVEL_UP_XP['KNIGHT_LEVELUP_XP'] = KNIGHT_LEVELUP_XP;
-    LEVEL_UP_XP['ROOK_LEVELUP_XP'] = ROOK_LEVELUP_XP;
-    LEVEL_UP_XP['QUEEN_LEVELUP_XP'] = QUEEN_LEVELUP_XP;
-    LEVEL_UP_XP['KING_LEVELUP_XP'] = KING_LEVELUP_XP;
-    let data = {fen: game.getGameState().getBoard().getFen(), turn: game.getGameState().getTurn(), levelUpXp: LEVEL_UP_XP, game: game, pieceAbilities: Ability};
+    LEVEL_UP_XP['PAWN_LEVELUP_XP'] = [...PAWN_LEVELUP_XP];
+    LEVEL_UP_XP['BISHOP_LEVELUP_XP'] = [...BISHOP_LEVELUP_XP];
+    LEVEL_UP_XP['KNIGHT_LEVELUP_XP'] = [...KNIGHT_LEVELUP_XP];
+    LEVEL_UP_XP['ROOK_LEVELUP_XP'] = [...ROOK_LEVELUP_XP];
+    LEVEL_UP_XP['QUEEN_LEVELUP_XP'] = [...QUEEN_LEVELUP_XP];
+    LEVEL_UP_XP['KING_LEVELUP_XP'] = [...KING_LEVELUP_XP];
+    let data = {fen: game.getGameState().getBoard().getFen(), turn: game.getGameState().getTurn(), levelUpXp: LEVEL_UP_XP, game: game, pieceAbilities: Ability, KING_DEFAULT_ABILITY_CAPACITY : KING_DEFAULT_ABILITY_CAPACITY};
     if(game)
         res.send(data);
     else
