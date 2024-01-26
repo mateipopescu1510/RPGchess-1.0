@@ -28,19 +28,20 @@ export class Piece {
         level: number = 0,
         attacks: Array<[Direction, number]> = []
     ) {
-
+        
         this.side = side;
         this.type = type;
         this.initialSquare = initialSquare;
         this.canLevelUp = canLevelUp;
         this.XP = XP;
         this.level = level;
+
         this.possibleAbilities = []
 
         switch (this.type) {
             case Type.PAWN: {
                 this.attacks = [[Direction.PAWN, 1]];
-                this.levelUpXP = Utils.PAWN_LEVELUP_XP;
+                this.levelUpXP = [...Utils.PAWN_LEVELUP_XP];
                 this.captureMultiplier = Utils.PAWN_CAPTURE_MULTIPLIER;
                 this.abilityCapacity = Utils.PAWN_DEFAULT_ABILITY_CAPACITY;
                 this.maxLevel = Utils.PAWN_MAX_LEVEL;
@@ -50,7 +51,7 @@ export class Piece {
             }
             case Type.BISHOP: {
                 this.attacks = [[Direction.DIAGONAL, Utils.INFINITE_RANGE]];
-                this.levelUpXP = Utils.BISHOP_LEVELUP_XP;
+                this.levelUpXP = [...Utils.BISHOP_LEVELUP_XP];
                 this.captureMultiplier = Utils.BISHOP_CAPTURE_MULTIPLIER;
                 this.abilityCapacity = Utils.BISHOP_DEFAULT_ABILITY_CAPACITY;
                 this.maxLevel = Utils.BISHOP_MAX_LEVEL;
@@ -60,7 +61,7 @@ export class Piece {
             }
             case Type.KNIGHT: {
                 this.attacks = [[Direction.L, 1]];
-                this.levelUpXP = Utils.KNIGHT_LEVELUP_XP;
+                this.levelUpXP = [...Utils.KNIGHT_LEVELUP_XP];
                 this.captureMultiplier = Utils.KNIGHT_CAPTURE_MULTIPLIER;
                 this.abilityCapacity = Utils.KNIGHT_DEFAULT_ABILITY_CAPACITY;
                 this.maxLevel = Utils.KNIGHT_MAX_LEVEL;
@@ -70,7 +71,7 @@ export class Piece {
             }
             case Type.ROOK: {
                 this.attacks = [[Direction.LINE, Utils.INFINITE_RANGE]];
-                this.levelUpXP = Utils.ROOK_LEVELUP_XP;
+                this.levelUpXP = [...Utils.ROOK_LEVELUP_XP];
                 this.captureMultiplier = Utils.ROOK_CAPTURE_MULTIPLIER;
                 this.abilityCapacity = Utils.ROOK_DEFAULT_ABILITY_CAPACITY;
                 this.maxLevel = Utils.ROOK_MAX_LEVEL;
@@ -80,7 +81,7 @@ export class Piece {
             }
             case Type.QUEEN: {
                 this.attacks = [[Direction.LINE, Utils.INFINITE_RANGE], [Direction.DIAGONAL, Utils.INFINITE_RANGE]];
-                this.levelUpXP = Utils.QUEEN_LEVELUP_XP;
+                this.levelUpXP = [...Utils.QUEEN_LEVELUP_XP];
                 this.captureMultiplier = Utils.QUEEN_CAPTURE_MULTIPLIER;
                 this.abilityCapacity = Utils.QUEEN_DEFAULT_ABILITY_CAPACITY;
                 this.maxLevel = Utils.QUEEN_MAX_LEVEL;
@@ -90,7 +91,7 @@ export class Piece {
             }
             case Type.KING: {
                 this.attacks = [[Direction.LINE, 1], [Direction.DIAGONAL, 1], [Direction.CASTLING, 1]];
-                this.levelUpXP = Utils.KING_LEVELUP_XP;
+                this.levelUpXP = [...Utils.KING_LEVELUP_XP];
                 this.captureMultiplier = Utils.KING_CAPTURE_MULTIPLIER;
                 this.abilityCapacity = Utils.KING_DEFAULT_ABILITY_CAPACITY;
                 this.maxLevel = Utils.KING_MAX_LEVEL;
