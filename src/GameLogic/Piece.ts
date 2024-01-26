@@ -35,15 +35,18 @@ export class Piece {
         this.canLevelUp = canLevelUp;
         this.XP = XP;
         this.level = level;
-        
-        switch (this.type) {        ///problema: copiere de referinta in loc de clonare array utils
+
+        this.possibleAbilities = []
+
+        switch (this.type) {
             case Type.PAWN: {
                 this.attacks = [[Direction.PAWN, 1]];
                 this.levelUpXP = [...Utils.PAWN_LEVELUP_XP];
                 this.captureMultiplier = Utils.PAWN_CAPTURE_MULTIPLIER;
                 this.abilityCapacity = Utils.PAWN_DEFAULT_ABILITY_CAPACITY;
                 this.maxLevel = Utils.PAWN_MAX_LEVEL;
-                this.possibleAbilities = [...Utils.PAWN_ABILITIES];
+                this.possibleAbilities.push(...Utils.PAWN_ABILITIES);
+                this.possibleAbilities.push(...Utils.GENERIC_ABILITIES);
                 break;
             }
             case Type.BISHOP: {
@@ -52,7 +55,8 @@ export class Piece {
                 this.captureMultiplier = Utils.BISHOP_CAPTURE_MULTIPLIER;
                 this.abilityCapacity = Utils.BISHOP_DEFAULT_ABILITY_CAPACITY;
                 this.maxLevel = Utils.BISHOP_MAX_LEVEL;
-                this.possibleAbilities = [...Utils.BISHOP_ABILITIES];
+                this.possibleAbilities.push(...Utils.BISHOP_ABILITIES);
+                this.possibleAbilities.push(...Utils.GENERIC_ABILITIES);
                 break;
             }
             case Type.KNIGHT: {
@@ -61,7 +65,8 @@ export class Piece {
                 this.captureMultiplier = Utils.KNIGHT_CAPTURE_MULTIPLIER;
                 this.abilityCapacity = Utils.KNIGHT_DEFAULT_ABILITY_CAPACITY;
                 this.maxLevel = Utils.KNIGHT_MAX_LEVEL;
-                this.possibleAbilities = [...Utils.KNIGHT_ABILITIES];
+                this.possibleAbilities.push(...Utils.KNIGHT_ABILITIES);
+                this.possibleAbilities.push(...Utils.GENERIC_ABILITIES);
                 break;
             }
             case Type.ROOK: {
@@ -70,7 +75,8 @@ export class Piece {
                 this.captureMultiplier = Utils.ROOK_CAPTURE_MULTIPLIER;
                 this.abilityCapacity = Utils.ROOK_DEFAULT_ABILITY_CAPACITY;
                 this.maxLevel = Utils.ROOK_MAX_LEVEL;
-                this.possibleAbilities = [...Utils.ROOK_ABILITIES];
+                this.possibleAbilities.push(...Utils.ROOK_ABILITIES);
+                this.possibleAbilities.push(...Utils.GENERIC_ABILITIES);
                 break;
             }
             case Type.QUEEN: {
@@ -79,7 +85,8 @@ export class Piece {
                 this.captureMultiplier = Utils.QUEEN_CAPTURE_MULTIPLIER;
                 this.abilityCapacity = Utils.QUEEN_DEFAULT_ABILITY_CAPACITY;
                 this.maxLevel = Utils.QUEEN_MAX_LEVEL;
-                this.possibleAbilities = [...Utils.QUEEN_ABILITIES];
+                this.possibleAbilities.push(...Utils.QUEEN_ABILITIES);
+                this.possibleAbilities.push(...Utils.GENERIC_ABILITIES);
                 break;
             }
             case Type.KING: {
@@ -88,7 +95,8 @@ export class Piece {
                 this.captureMultiplier = Utils.KING_CAPTURE_MULTIPLIER;
                 this.abilityCapacity = Utils.KING_DEFAULT_ABILITY_CAPACITY;
                 this.maxLevel = Utils.KING_MAX_LEVEL;
-                this.possibleAbilities = [...Utils.KING_ABILITIES];
+                this.possibleAbilities.push(...Utils.KING_ABILITIES);
+                this.possibleAbilities.push(...Utils.GENERIC_ABILITIES);
                 break;
             }
             default: {
@@ -101,12 +109,6 @@ export class Piece {
                 break;
             }
         }
-        
-        if (Utils.isNotEmpty(this)){
-            this.possibleAbilities.push(...Utils.GENERIC_ABILITIES);
-        }
-        if (this.type === Type.BISHOP)
-            console.log(Utils.BISHOP_ABILITIES);
 
         this.abilities = [];
         this.setAbilities(abilities);
@@ -209,7 +211,7 @@ export class Piece {
     setCaptureMultiplier(captureMultiplier: number) {
         this.captureMultiplier = captureMultiplier;
     }
-    increaseCaptureMultiplier(increment: number = 0.1) {
+    increaseCaptureMultiplier(increment: number = 0.2) {
         this.captureMultiplier += increment;
     }
     getCaptureMultiplier(): number {
@@ -243,18 +245,21 @@ export class Piece {
         return this.abilities;
     }
     hasAbility(ability: Ability): Boolean {
-        let index: number = this.getAbilitiesNames().indexOf(ability);
+        let index: number = this.getAbilitiesIDs().indexOf(ability);
         return index !== -1;
     }
 
-    getAbilitiesNames(): Ability[] {
+    getAbilitiesIDs(): Ability[] {
         return this.abilities.map(([ability, _]) => ability);
+    }
+    getAbilitiesNames(): string[] {
+        return this.abilities.map(([ability, _]) => Ability[ability]);
     }
     getAbilitiesTimesUsed(): number[] {
         return this.abilities.map(([_, timesUsed]) => timesUsed);
     }
     setTimesUsed(ability: Ability, timesUsed: number): Boolean {
-        let index: number = this.getAbilitiesNames().indexOf(ability);
+        let index: number = this.getAbilitiesIDs().indexOf(ability);
         if (index === -1)
             return false;
 
@@ -262,24 +267,26 @@ export class Piece {
         return true;
     }
     timesUsed(ability: Ability): number {
-        let index: number = this.getAbilitiesNames().indexOf(ability);
+        let index: number = this.getAbilitiesIDs().indexOf(ability);
         if (index === -1)
             return -1;
 
         return this.abilities[index][1];
     }
-    private increaseTimesUsed(ability: Ability): Boolean {
-        let index: number = this.getAbilitiesNames().indexOf(ability);
+    increaseTimesUsed(ability: Ability, passive: Boolean = false): Boolean {
+        let index: number = this.getAbilitiesIDs().indexOf(ability);
         if (index === -1)
             return false;
 
+        let maxTimesUsed: number = passive ? Utils.PASSIVE_ABILITY_MAX_TIMES_USED : Utils.ABILITY_MAX_TIMES_USED;
         this.abilities[index][1]++;
 
-        if (Utils.PASSIVE_ABILITIES.indexOf(ability) !== -1 &&
-            this.timesUsed(ability) >= Utils.PASSIVE_ABILITY_MAX_TIMES_USED ||
-            Utils.DISABILITIES.indexOf(ability) !== -1 &&
-            this.timesUsed(ability) >= Utils.DISABILITY_MAX_TIMES_USED)
+        if (this.timesUsed(ability) >= maxTimesUsed)
             this.removeAbility(ability);
+
+        // if (Utils.PASSIVE_ABILITIES.indexOf(ability) !== -1 &&
+        //     this.timesUsed(ability) >= Utils.PASSIVE_ABILITY_MAX_TIMES_USED)
+        //     this.removeAbility(ability);
 
         return true;
     }
@@ -288,8 +295,11 @@ export class Piece {
     addAbility(ability: Ability, timesUsed: number = 0): Boolean {
         if (this.abilities.length === this.abilityCapacity && ability !== Ability.INCREASE_CAPACITY)
             return false;
-        if (this.getAbilitiesNames().indexOf(ability) !== -1 || this.possibleAbilities.indexOf(ability) === -1)
+        if (this.getAbilitiesIDs().indexOf(ability) !== -1 || this.possibleAbilities.indexOf(ability) === -1)
             return false;
+
+        //TODO modify timesUsed into timesRemaining and have it count down to 0 until ability gets removed
+        // timesUsed = 0;
 
         switch (ability) {
             case Ability.INCREASE_CAPACITY: {
@@ -310,6 +320,14 @@ export class Piece {
                 this.updateAttackRange(Direction.L, 2);
                 break;
             }
+            case Ability.ON_CAMEL: {
+                this.removeAbility(Ability.ON_HORSE);
+                break;
+            }
+            case Ability.ON_HORSE: {
+                this.removeAbility(Ability.ON_CAMEL);
+                break;
+            }
             default: {
                 break;
             }
@@ -320,9 +338,11 @@ export class Piece {
         return true;
     }
     removeAbility(ability: Ability): Boolean {
-        let index: number = this.getAbilitiesNames().indexOf(ability);
+        let index: number = this.getAbilitiesIDs().indexOf(ability);
         if (index === -1)
             return false;
+
+        this.abilities.splice(index, 1);
 
         switch (ability) {
             case Ability.SWEEPER: {
@@ -335,19 +355,29 @@ export class Piece {
                 this.updateAttackRange(Direction.L, 1);
                 break;
             }
+            case Ability.CHANGE_COLOR:
+            case Ability.SHIELD: {
+                return true;
+            }
             default: {
                 break;
             }
         }
 
-        this.abilities.splice(index, 1);
         this.possibleAbilities.push(ability);
         return true;
     }
 
     //*POSSIBLE ABILITIES
-    getPossibleAbilities(): Array<Ability> {
+    getPossibleAbilitiesIDs(): Ability[] {
+        if (this.abilities.length === this.abilityCapacity)
+            return [Ability.INCREASE_CAPACITY];
         return this.possibleAbilities;
+    }
+    getPossibleAbilitiesNames(): string[] {
+        if (this.abilities.length === this.abilityCapacity)
+            return [Ability[Ability.INCREASE_CAPACITY]];
+        return this.possibleAbilities.map(abilityID => Ability[abilityID]);
     }
 
     //*XP
@@ -404,13 +434,9 @@ export class Piece {
     incrementMoveCounter(ability: Ability = Ability.NONE) {
         this.moveCounter++;
 
-        for (let disability of Utils.DISABILITIES)
-            if (this.hasAbility(disability))
-                this.increaseTimesUsed(disability);
-
         for (let passiveAbility of Utils.PASSIVE_ABILITIES)
             if (this.hasAbility(passiveAbility))
-                this.increaseTimesUsed(passiveAbility);
+                this.increaseTimesUsed(passiveAbility, true);
 
         if (ability !== Ability.NONE)
             this.increaseTimesUsed(ability);
@@ -431,58 +457,4 @@ export class Piece {
     isHighlighted() {
         return this.highlighted;
     }
-
 }
-
-export function oppositePiece(piece1: Piece, piece2: Piece): Boolean {
-    return piece1.getSide() === Side.WHITE && piece2.getSide() === Side.BLACK ||
-        piece1.getSide() === Side.BLACK && piece2.getSide() === Side.WHITE
-
-}
-
-export function oppositeSide(side1: Side, side2: Side): Boolean {
-    return side1 === Side.WHITE && side2 === Side.BLACK ||
-        side1 === Side.BLACK && side2 === Side.WHITE;
-}
-
-export function sameSidePiece(piece1: Piece, piece2: Piece): Boolean {
-    return piece1.getSide() === Side.WHITE && piece2.getSide() === Side.WHITE ||
-        piece1.getSide() === Side.BLACK && piece2.getSide() === Side.BLACK;
-}
-
-export function sameSide(side1: Side, side2: Side) {
-    return side1 === Side.WHITE && side2 === Side.WHITE ||
-        side1 === Side.BLACK && side2 === Side.BLACK;
-}
-
-export function isQueenOrRook(piece: Piece): Boolean {
-    return piece.getType() === Type.QUEEN || piece.getType() === Type.ROOK;
-}
-
-export function isQueenOrBishop(piece: Piece): Boolean {
-    return piece.getType() === Type.QUEEN || piece.getType() === Type.BISHOP;
-}
-
-export function isKnight(piece: Piece): Boolean {
-    return piece.getType() === Type.KNIGHT;
-}
-
-export function isPawn(piece: Piece): Boolean {
-    return piece.getType() === Type.PAWN;
-}
-
-export function isKing(piece: Piece) {
-    return piece.getType() === Type.KING;
-}
-
-// var piece: Piece = new Piece(Side.BLACK, Type.BISHOP, [0, 0], true, [[Ability.SMOLDERING, 0], [Ability.CAMEL, 1]]);
-// console.log(piece.getAbilities());
-// console.log(piece.getPossibleAbilities());
-
-// console.log(piece.addAbility(Ability.ARCHBISHOP));
-// console.log(piece.getAbilities());
-// console.log(piece.getPossibleAbilities());
-
-// console.log(piece.removeAbility(Ability.ARCHBISHOP));
-// console.log(piece.getAbilities());
-// console.log(piece.getPossibleAbilities());

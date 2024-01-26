@@ -114,6 +114,9 @@ export class Board {
 
                         this.boardSetup[rowIndex - 1][column] = new Piece(side, type, [rowIndex - 1, column], canLevelUp, abilities, XP, level);
 
+                        if (type === Type.KING)
+                            side === Side.WHITE ? this.whiteKingPosition = [rowIndex - 1, column] : this.blackKingPosition = [rowIndex - 1, column];
+
                         column++;
                     }
                     else {
@@ -124,23 +127,14 @@ export class Board {
         });
     }
 
-    /*//TODO finish updateFen()
-    updateFen() {
+    private updateFen() {
         let newFen: string = "";
-        this.fen.split("/").forEach((row, rowIndex) => {
-            //TODO might have to look through every single row instead of just the ones where a piece moved to be compatible with pieces affecting other pieces (for example a piece applying a disability to another piece)
-        });
-    }*/
-
-
-    updateFen() {
-        let newFen: string = "";
-        console.log(this.fen.split("/"));
         this.fen.split("/").forEach((row, rowIndex) => {
             if (rowIndex)
                 for (let piece of this.boardSetup[rowIndex - 1]) {
                     if (Utils.isNotEmpty(piece)) {
                         newFen += piece.getSide() === Side.WHITE ? piece.getType().toUpperCase() : piece.getType();
+
                         let pieceInformation: string = "";
 
                         if (!piece.getCanLevelUp())
@@ -196,39 +190,47 @@ export class Board {
 
         this.movesList.push([[fromRow, fromColumn], [toRow, toColumn], this.boardSetup[fromRow][fromColumn], this.boardSetup[toRow][toColumn]]);
 
+        if (this.checkSpecialConditionsBeforeMove([fromRow, fromColumn], [toRow, toColumn]))
+            return true;
+
         let capturedPieceXP: number = this.boardSetup[toRow][toColumn].getTotalXP();
+
         this.boardSetup[toRow][toColumn] = this.boardSetup[fromRow][fromColumn]; //Move the piece to target square
 
         this.mustLevelUpCoordinates = this.boardSetup[toRow][toColumn].addXP(capturedPieceXP) ? [toRow, toColumn] : [-1, -1];
 
-        //TODO check for pawn promotion
-
         if (fromRow !== toRow || fromColumn !== toColumn)
             this.boardSetup[fromRow][fromColumn] = new Piece(); //Create empty square on the square the piece moved from
+
+        //TODO check for pawn promotion
 
         if (this.boardSetup[toRow][toColumn].getType() === Type.KING)
             this.boardSetup[toRow][toColumn].getSide() === Side.WHITE ? this.whiteKingPosition = [toRow, toColumn] : this.blackKingPosition = [toRow, toColumn];
 
+        //If the move was made using an ability, increment the piece's move counter as long as the times used of that ability
         let abilityUsed: Ability = moves[moveIndex][2];
         abilityUsed === Ability.NONE ? this.boardSetup[toRow][toColumn].incrementMoveCounter() : this.boardSetup[toRow][toColumn].incrementMoveCounter(abilityUsed);
-        //If the move was made using an ability, increment the piece's move counter as long as the times used of that ability
+
+        if (Utils.isKing(this.boardSetup[toRow][toColumn]))
+            this.boardSetup[toRow][toColumn].getSide() === Side.WHITE ? this.whiteKingPosition = [toRow, toColumn] : this.blackKingPosition = [toRow, toColumn];
 
         //Highlight this move's source and destination squares
         this.boardSetup[fromRow][fromColumn].highlight();
         this.boardSetup[toRow][toColumn].highlight();
         this.halfMoveCounter++;
 
+        this.checkSpecialConditionsAfterMove([toRow, toColumn]);
+
         this.updateFen();
 
         return true;
     }
 
-    //Make private when done with testing
-    validMoves([row, column]: [number, number]): Array<[number, number, Ability]> {
+    private validMoves([row, column]: [number, number]): Array<[number, number, Ability]> {
         let moves: Array<[number, number, Ability]> = [];
         let piece: Piece = this.boardSetup[row][column];
         let side: Side = piece.getSide();
-        let abilities: Array<Ability> = piece.getAbilitiesNames();
+        let abilities: Array<Ability> = piece.getAbilitiesIDs();
         let attacks: Array<[Direction, number]> = piece.getAttacks();
 
         if (this.checkPassiveAbilities([row, column]))
@@ -241,6 +243,29 @@ export class Board {
             moves.push(...this.checkAttacks([row, column], side, attack));
 
         return moves;
+    }
+
+    private checkSpecialConditionsBeforeMove([fromRow, fromColumn]: [number, number], [toRow, toColumn]: [number, number]): Boolean {
+        //Check if special conditions don't allow the piece to move to the target square (so far, the only special conditon is the capture of a piece with shield)
+        if (this.boardSetup[toRow][toColumn].hasAbility(Ability.SHIELD)) {
+            this.boardSetup[toRow][toColumn].removeAbility(Ability.SHIELD);
+            return true;
+        }
+        return false;
+    }
+
+    private checkSpecialConditionsAfterMove([row, column]: [number, number]) {
+        //Check if special conditons apply to the piece after the move is on the board (so far, the only special condition is the queen boosting the acpture multiplier of neighboring piece if it has the ability)
+        if (this.boardSetup[row][column].hasAbility(Ability.BOOST_ADJACENT_PIECES)) {
+            let delta: Array<[number, number]> = [[1, 0], [-1, 0], [0, 1], [0, -1], [1, 1], [-1, 1], [1, -1], [-1, -1]];
+            for (let [deltaRow, deltaColumn] of delta)
+                if (row + deltaRow >= 0 &&
+                    row + deltaRow < this.rows &&
+                    column + deltaColumn >= 0 &&
+                    column + deltaColumn < this.columns &&
+                    Utils.sameSidePiece(this.boardSetup[row][column], this.boardSetup[row + deltaRow][column + deltaColumn]))
+                    this.boardSetup[row + deltaRow][column + deltaColumn].increaseCaptureMultiplier(0.1);
+        }
     }
 
     private checkPassiveAbilities([row, column]: [number, number]): Boolean {
@@ -273,17 +298,20 @@ export class Board {
                     moves.push([row + 2 * deltaRow, column, ability]);
                 return moves;
             }
-            case Ability.COLOR_COMPLEX: {
+            case Ability.CHANGE_COLOR: {
                 for (let deltaColumn of [-1, 1])
                     if (column > 0 && column < this.columns - 1 &&
                         Utils.isEmpty(this.boardSetup[row][column + deltaColumn]))
                         moves.push([row, column + deltaColumn, ability]);
                 return moves;
             }
-            case Ability.ARCHBISHOP || Ability.CHANCELLOR || Ability.ON_HORSE: {
+            case Ability.ARCHBISHOP:
+            case Ability.CHANCELLOR:
+            case Ability.ON_HORSE: {
                 return this.checkAttacks([row, column], side, [Direction.L, 1], ability);
             }
-            case Ability.CAMEL || Ability.ON_CAMEL: {
+            case Ability.CAMEL:
+            case Ability.ON_CAMEL: {
                 return this.checkAttacks([row, column], side, [Direction.CAMEL, 1], ability)
             }
             case Ability.HAS_PAWN: {
@@ -408,8 +436,20 @@ export class Board {
         console.log(board);
     }
 
+    getWhiteKingPosition(): [number, number] {
+        return this.whiteKingPosition;
+    }
+
+    getBlackKingPosition(): [number, number] {
+        return this.blackKingPosition;
+    }
+
     getLevelUpCoordinates(): [number, number] {
         return this.mustLevelUpCoordinates;
+    }
+
+    getPieceAt([row, column]): Piece {
+        return this.boardSetup[row][column];
     }
 
     mustLevelUp(): Boolean {
@@ -419,55 +459,6 @@ export class Board {
     levelUpDone() {
         this.mustLevelUpCoordinates = [-1, -1];
     }
-
 }
-//"rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR"
+//"8 8/rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR"
 //"8 8/n5P1/2p2r2/1P6/5k2/2QB4/1q6/1PP5/8"
-
-// var board: Board = new Board("8 8/rnbqkbnr/pppppppp/8/8/8/8/P1PPPPPP/RP[a204]BQKBNR");
-// board.printBoard();
-// console.log(board.getFen());
-// board.printValidSquares([7, 1]);
-// console.log(board.validMoves([7, 1]));
-
-// console.log(board.movePiece([7, 1], [5, 1]));
-
-// board.printValidSquares([5, 1]);
-// console.log(board.getFen());
-// console.log(board.getBoardSetup()[5][1].getAbilities());
-
-// console.log(board.movePiece([5, 1], [6, 1]));
-
-// board.printValidSquares([6, 1]);
-// console.log(board.getFen());
-// console.log(board.getBoardSetup()[6][1].getAbilities());
-
-// var piece: Piece = board.getBoardSetup()[7][1];
-// console.log(piece.getAttacks());
-// console.log(board.validMoves([7, 1]));
-// console.log(piece.getAbilities());
-// board.printValidSquares([7, 1]);
-
-// console.log(piece.setTimesUsed(Ability.LEAPER, 4));
-
-// console.log(board.movePiece([7, 1], [5, 0]));
-
-// board.printBoard();
-// console.log(board.validMoves([5, 0]));
-// console.log(piece.getAbilities());
-// board.printValidSquares([5, 0]);
-
-// console.log(board.movePiece([2, 5], [3, 3]));
-
-// board.printBoard();
-// console.log(board.validMoves([3, 3]));
-// console.log(piece.getAbilities());
-// board.printValidSquares([3, 3]);
-
-// console.log(board.getBoardSetup()[3][3].addAbility(Ability.QUANTUM_TUNNELING));
-// console.log(board.validMoves([3, 3]));
-// board.printValidSquares([3, 3]);
-
-
-
-

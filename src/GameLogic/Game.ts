@@ -1,5 +1,5 @@
 import { Direction, INFINITE_RANGE, INFINITE_TIME, Type, Side, GameResult } from './Utils';
-import { oppositeSide, Piece, sameSide } from './Piece'
+import { Piece } from './Piece'
 import { Board } from './Board';
 import { GameState } from './GameState';
 
@@ -11,12 +11,12 @@ export class Game {
     private gameResult: GameResult;
     private gameState: GameState;
 
-    constructor(whiteId: string, blackId: string, fen: string, pseudoLegal: boolean = false) {
+    constructor(whiteId: string, blackId: string, fen: string) {
         this.gameId = Game.gameIdCounter;
         Game.gameIdCounter++;
         this.whiteId = whiteId;
         this.blackId = blackId;
-        this.gameState = new GameState(fen, 0, INFINITE_TIME, INFINITE_TIME, pseudoLegal);
+        this.gameState = new GameState(fen, 0, INFINITE_TIME, INFINITE_TIME);
         this.gameResult = GameResult.IN_PROGRESS;
     }
 
@@ -31,6 +31,4 @@ export class Game {
     getGameState(): GameState {
         return this.gameState;
     }
-
-
 }
