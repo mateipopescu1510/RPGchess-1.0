@@ -127,7 +127,7 @@ export class Board {
         });
     }
 
-    private updateFen() {
+    public updateFen() {
         let newFen: string = "";
         this.fen.split("/").forEach((row, rowIndex) => {
             if (rowIndex)
