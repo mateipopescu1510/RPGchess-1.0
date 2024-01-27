@@ -50,8 +50,8 @@
               class="home-image"
             />
             <div class="home-btn-group">
-              <button class="home-login button">Login</button>
-              <button class="home-register button">Register</button>
+              <button id="login" class="button">Login</button>
+              <button id="register" class="button">Register</button>
             </div>
           </header>
           <div class="home-main-body">
@@ -100,13 +100,15 @@
       classicRPGBtn = document.getElementById("joinClassicRPG")
       classicChessBtn = document.getElementById("joinClassicChess");
       insanityRPGBtn = document.getElementById("joinInsanityRPG");
+      loginBtn = document.getElementById("login");
+      registerBtn = document.getElementById("register");
       defaultBtnColor = classicRPGBtn.style.backgroundColor;
-
 
       classicRPGBtn.addEventListener("click", joinClassicRPG);
       classicChessBtn.addEventListener("click", joinClassicChess);
       insanityRPGBtn.addEventListener("click", joinInsanityRPG);
-
+      loginBtn.addEventListener("click", login);
+      registerBtn.addEventListener("click", register);
     }
 		function joinClassicRPG()
     {
@@ -167,6 +169,12 @@
         classicRPGBtn.disabled = true;
         fetch('/joinQueue?mode=insanityrpg').then(response => window.location.href = response.url);
       }
+    }
+    function login() {
+      alert("Te rog mergi!");
+    }
+    function register() {
+      alert("Te rog si tu!");
     }
     </script>
   </body>

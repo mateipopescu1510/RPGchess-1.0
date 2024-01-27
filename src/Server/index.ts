@@ -22,13 +22,13 @@ const io = new socketIO.Server(server)
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 
-// set static files folder
+// Set static files folder
 app.use(express.static('resources'));
 
+//  Connect to database server
+const db = mongodb.connectToDb().catch((err) => { console.log(err) });
 
-mongodb.connectToDb().catch((err) => { console.log(err) });
-
-// create virtual game rooms and handle communications
+// Create virtual game rooms and handle communications
 gameSocket.handleGames(io);  
 
 app.get('/', (req, res) => {
@@ -36,80 +36,80 @@ app.get('/', (req, res) => {
 });
 
 
-app.get('/boardstate', (req, res) => {
-    let gameId = req.query.gameId as string;
-    let game = gamesInProgress.get(gameId)!;
-    let LEVEL_UP_XP : Map<String, number[]> = new Map();
-    LEVEL_UP_XP['PAWN_LEVELUP_XP'] = [...PAWN_LEVELUP_XP];
-    LEVEL_UP_XP['BISHOP_LEVELUP_XP'] = [...BISHOP_LEVELUP_XP];
-    LEVEL_UP_XP['KNIGHT_LEVELUP_XP'] = [...KNIGHT_LEVELUP_XP];
-    LEVEL_UP_XP['ROOK_LEVELUP_XP'] = [...ROOK_LEVELUP_XP];
-    LEVEL_UP_XP['QUEEN_LEVELUP_XP'] = [...QUEEN_LEVELUP_XP];
-    LEVEL_UP_XP['KING_LEVELUP_XP'] = [...KING_LEVELUP_XP];
-    let data = {fen: game.getGameState().getBoard().getFen(), turn: game.getGameState().getTurn(), levelUpXp: LEVEL_UP_XP, game: game, pieceAbilities: Ability, KING_DEFAULT_ABILITY_CAPACITY : KING_DEFAULT_ABILITY_CAPACITY};
-    if(game)
-        res.send(data);
-    else
-        res.send("Game not found");
-});
+// app.get('/boardstate', (req, res) => {
+//     let gameId = req.query.gameId as string;
+//     let game = gamesInProgress.get(gameId)!;
+//     let LEVEL_UP_XP : Map<String, number[]> = new Map();
+//     LEVEL_UP_XP['PAWN_LEVELUP_XP'] = [...PAWN_LEVELUP_XP];
+//     LEVEL_UP_XP['BISHOP_LEVELUP_XP'] = [...BISHOP_LEVELUP_XP];
+//     LEVEL_UP_XP['KNIGHT_LEVELUP_XP'] = [...KNIGHT_LEVELUP_XP];
+//     LEVEL_UP_XP['ROOK_LEVELUP_XP'] = [...ROOK_LEVELUP_XP];
+//     LEVEL_UP_XP['QUEEN_LEVELUP_XP'] = [...QUEEN_LEVELUP_XP];
+//     LEVEL_UP_XP['KING_LEVELUP_XP'] = [...KING_LEVELUP_XP];
+//     let data = {fen: game.getGameState().getBoard().getFen(), turn: game.getGameState().getTurn(), levelUpXp: LEVEL_UP_XP, game: game, pieceAbilities: Ability, KING_DEFAULT_ABILITY_CAPACITY : KING_DEFAULT_ABILITY_CAPACITY};
+//     if(game)
+//         res.send(data);
+//     else
+//         res.send("Game not found");
+// });
 
 
-app.get('/game/:gameId', (req, res) => {
-    let gameId = req.params.gameId;
-    let game = gamesInProgress.get(gameId);
-    if(game)
-    {
-        let playerPerspective = req.cookies.userId === game.getWhiteId() ? "WHITE" : "BLACK";
-        res.render('pages/game', {gameId: gameId, playerPerspective: playerPerspective});
-    }
-});
+// app.get('/game/:gameId', (req, res) => {
+//     let gameId = req.params.gameId;
+//     let game = gamesInProgress.get(gameId);
+//     if(game)
+//     {
+//         let playerPerspective = req.cookies.userId === game.getWhiteId() ? "WHITE" : "BLACK";
+//         res.render('pages/game', {gameId: gameId, playerPerspective: playerPerspective});
+//     }
+// });
 
-app.get('/joinQueue', (req, res) => {
-    let userId = req.cookies.userId; // Retrieve the user ID from the cookie
-    if (!userId) {
-        userId = uuid.v4(); // Generate a new user ID
-        res.cookie('userId', userId); // Set the user ID in a cookie
-    }
-    let gamemode = req.query.mode as string;
-    matchmaking.joinQueue(userId, gamemode, res);
-});
+// app.get('/joinQueue', (req, res) => {
+//     let userId = req.cookies.userId; // Retrieve the user ID from the cookie
+//     if (!userId) {
+//         userId = uuid.v4(); // Generate a new user ID
+//         res.cookie('userId', userId); // Set the user ID in a cookie
+//     }
+//     let gamemode = req.query.mode as string;
+//     matchmaking.joinQueue(userId, gamemode, res);
+// });
 
-app.get('/leaveQueue', (req, res) => {
-    let userId = req.cookies.userId;
-    if (!userId) {
-        userId = uuid.v4(); 
-        res.cookie('userId', userId); 
-        return;
-    }
-    let gamemode = req.query.mode as string;
-    matchmaking.leaveQueue(userId, gamemode);
-});
+// app.get('/leaveQueue', (req, res) => {
+//     let userId = req.cookies.userId;
+//     if (!userId) {
+//         userId = uuid.v4(); 
+//         res.cookie('userId', userId); 
+//         return;
+//     }
+//     let gamemode = req.query.mode as string;
+//     matchmaking.leaveQueue(userId, gamemode);
+// });
 
-app.get('/register', (req, res) => {
-    res.render('pages/register');
-});
+// app.get('/register', (req, res) => {
+//     res.render('pages/register');
+// });
 
-app.post('/register', (req, res) => {
-    const playersCollection = mongodb.getDb().collection('players');
+// app.post('/register', (req, res) => {
+//     const users = mongodb.getDb().collection('users');
 
-    const { nickname, username, email, password } = req.body;
-    const newPlayer = { nickname: nickname, username: username, email: email, password: password, games_won: 0, games_lost: 0, rating: 1000, friend_list: [], game_history: [], description: "", creation_date: new Date() };
-    playersCollection.insertOne(newPlayer);
+//     const { nickname, username, email, password } = req.body;
+//     const newUser = { nickname: nickname, username: username, email: email, password: password, games_won: 0, games_lost: 0, rating: 1000, friend_list: [], game_history: [], description: "", creation_date: new Date() };
+//     users.insertOne(newUser);
 
-    res.redirect('/game');
-});
+//     res.redirect('/game');
+// });
 
-app.get('/login', (req, res) => {
-    res.render('pages/login');
-})
+// app.get('/login', (req, res) => {
+//     res.render('pages/login');
+// })
 
-app.post('/login', async (req, res) => {
-    const { username, password } = req.body;
-    if (await login.isValidCredentials(username, password))
-      res.redirect('/game');
-    else 
-      res.send("Invalid account.");
-  });
+// app.post('/login', async (req, res) => {
+//     const { username, password } = req.body;
+//     if (await login.isValidCredentials(username, password))
+//       res.redirect('/game');
+//     else 
+//       res.send("Invalid account.");
+//   });
 
 let port = 3000;
 server.listen(port, '0.0.0.0', () => {
