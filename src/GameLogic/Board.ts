@@ -193,17 +193,22 @@ export class Board {
         if (this.checkSpecialConditionsBeforeMove([fromRow, fromColumn], [toRow, toColumn]))
             return true;
 
-        let capturedPieceXP: number = this.boardSetup[toRow][toColumn].getTotalXP();
+        let capturedPieceXP: number = 0;
 
-        this.boardSetup[toRow][toColumn] = this.boardSetup[fromRow][fromColumn]; //Move the piece to target square
+        if (fromRow !== toRow || fromColumn !== toColumn) {
+            capturedPieceXP = this.boardSetup[toRow][toColumn].getTotalXP();
+
+            this.boardSetup[toRow][toColumn] = this.boardSetup[fromRow][fromColumn]; //Move the piece to target square
+
+            this.boardSetup[fromRow][fromColumn] = new Piece(); //Create empty square on the square the piece moved from
+        }
 
         if (this.boardSetup[toRow][toColumn].getCanLevelUp())
             this.mustLevelUpCoordinates = this.boardSetup[toRow][toColumn].addXP(capturedPieceXP) ? [toRow, toColumn] : [-1, -1];
 
-        if (fromRow !== toRow || fromColumn !== toColumn)
-            this.boardSetup[fromRow][fromColumn] = new Piece(); //Create empty square on the square the piece moved from
-
         //TODO check for pawn promotion
+        if (this.checkPawnPromotion([toRow, toColumn]))
+            this.mustLevelUpCoordinates = [-1, -1];
 
         if (this.boardSetup[toRow][toColumn].getType() === Type.KING)
             this.boardSetup[toRow][toColumn].getSide() === Side.WHITE ? this.whiteKingPosition = [toRow, toColumn] : this.blackKingPosition = [toRow, toColumn];
@@ -405,6 +410,21 @@ export class Board {
                 moves.push([row + deltaRow, column + deltaColumn, Ability.NONE]);
 
         return moves;
+    }
+
+    private checkPawnPromotion([row, column]: [number, number]): Boolean {
+        if (!Utils.isPawn(this.boardSetup[row][column]))
+            return false;
+
+        let side: Side = this.boardSetup[row][column].getSide();
+
+        if (side === Side.WHITE && row !== 0 ||
+            side === Side.BLACK && row !== this.rows - 1)
+            return false;
+
+        this.boardSetup[row][column] = new Piece(Side.WHITE, Type.QUEEN, [row, column], true);
+
+        return true;
     }
 
     getLastMove(): [[number, number], [number, number], Piece, Piece] {
