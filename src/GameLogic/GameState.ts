@@ -83,6 +83,12 @@ export class GameState {
 
     //TODO finish checkmate()
     private checkmate(): Boolean {
+        let lastCapturedCoordinates: [number, number] = this.board.getLastMove()[1];
+
+        if (this.currentTurn === 0 && lastCapturedCoordinates.toString() === this.board.getWhiteKingPosition().toString() ||
+            this.currentTurn === 1 && lastCapturedCoordinates.toString() === this.board.getBlackKingPosition().toString())
+            return true;
+
         return false;
     }
 }
