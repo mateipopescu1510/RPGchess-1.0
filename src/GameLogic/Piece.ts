@@ -1,4 +1,4 @@
-import Utils, { Direction, Ability, Type, Side } from "./Utils";
+import Utils, { Direction, Ability, Type, Side, QUEEN_ABILITIES } from "./Utils";
 
 export class Piece {
     private side: Side;
@@ -254,8 +254,8 @@ export class Piece {
 
     //*ABILITIES
     setAbilities(abilities: [Ability, number][]) {
-        for (let [ability, timesUsed] of abilities)
-            this.addAbility(ability, timesUsed);
+        for (let [ability, timesRemaining] of abilities)
+            this.addAbility(ability, timesRemaining);
     }
     getAbilities(): [Ability, number][] {
         return this.abilities;
@@ -271,51 +271,48 @@ export class Piece {
     getAbilitiesNames(): string[] {
         return this.abilities.map(([ability, _]) => Ability[ability]);
     }
-    getAbilitiesTimesUsed(): number[] {
-        return this.abilities.map(([_, timesUsed]) => timesUsed);
+    getAbilitiesTimesRemaining(): number[] {
+        return this.abilities.map(([_, timesRemaining]) => timesRemaining);
     }
-    setTimesUsed(ability: Ability, timesUsed: number): Boolean {
+    setTimesRemaining(ability: Ability, timesRemaining: number): Boolean {
         let index: number = this.getAbilitiesIDs().indexOf(ability);
         if (index === -1)
             return false;
 
-        this.abilities[index][1] = timesUsed;
+        this.abilities[index][1] = timesRemaining;
         return true;
     }
-    timesUsed(ability: Ability): number {
+    timesRemaining(ability: Ability): number {
         let index: number = this.getAbilitiesIDs().indexOf(ability);
         if (index === -1)
             return -1;
 
         return this.abilities[index][1];
     }
-    increaseTimesUsed(ability: Ability, passive: Boolean = false): Boolean {
+    decreaseTimesRemaining(ability: Ability, passive: Boolean = false): Boolean {
         let index: number = this.getAbilitiesIDs().indexOf(ability);
         if (index === -1)
             return false;
 
-        let maxTimesUsed: number = passive ? Utils.PASSIVE_ABILITY_MAX_TIMES_USED : Utils.ABILITY_MAX_TIMES_USED;
-        this.abilities[index][1]++;
+        // let maxTimesUsed: number = passive ? Utils.PASSIVE_ABILITY_MAX_TIMES_USED : Utils.ABILITY_MAX_TIMES_USED;
+        this.abilities[index][1]--;
 
-        if (this.timesUsed(ability) >= maxTimesUsed)
+        if (this.timesRemaining(ability) <= 0)
             this.removeAbility(ability);
-
-        // if (Utils.PASSIVE_ABILITIES.indexOf(ability) !== -1 &&
-        //     this.timesUsed(ability) >= Utils.PASSIVE_ABILITY_MAX_TIMES_USED)
-        //     this.removeAbility(ability);
 
         return true;
     }
 
     //*ADD/REMOVE ABILITY
-    addAbility(ability: Ability, timesUsed: number = 0): Boolean {
+    addAbility(ability: Ability, timesRemaining: number = 0): Boolean {
         if (this.abilities.length === this.abilityCapacity && Utils.INSTANT_ABILITIES.indexOf(ability) === -1)
             return false;
         if (this.getAbilitiesIDs().indexOf(ability) !== -1 || this.possibleAbilities.indexOf(ability) === -1)
             return false;
 
         //TODO modify timesUsed into timesRemaining and have it count down to 0 until ability gets removed
-        // timesUsed = 0;
+        if (timesRemaining === 0)
+            timesRemaining = Utils.PASSIVE_ABILITIES.indexOf(ability) === -1 ? Utils.ABILITY_MAX_TIMES_USED : Utils.PASSIVE_ABILITY_MAX_TIMES_USED;
 
         switch (ability) {
             case Ability.INCREASE_CAPACITY: {
@@ -353,7 +350,7 @@ export class Piece {
             }
         }
 
-        this.abilities.push([ability, timesUsed]);
+        this.abilities.push([ability, timesRemaining]);
         this.possibleAbilities.splice(this.possibleAbilities.indexOf(ability), 1);
         return true;
     }
@@ -473,10 +470,10 @@ export class Piece {
 
         for (let passiveAbility of Utils.PASSIVE_ABILITIES)
             if (this.hasAbility(passiveAbility))
-                this.increaseTimesUsed(passiveAbility, true);
+                this.decreaseTimesRemaining(passiveAbility, true);
 
         if (ability !== Ability.NONE)
-            this.increaseTimesUsed(ability);
+            this.decreaseTimesRemaining(ability);
     }
 
     //*MAX LEVEL
@@ -505,3 +502,4 @@ export class Piece {
         return this.highlighted;
     }
 }
+
