@@ -92,7 +92,7 @@ app.post('/login', async (req, res) => {
     const { username, password } = req.body;
 
     if (await login.isValidCredentials(username, password)) {
-        res.render('pages/home?userId=');
+        res.redirect('/?user=true');
     }
     else {
         res.redirect('/login?failed=true');
