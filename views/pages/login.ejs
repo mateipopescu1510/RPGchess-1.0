@@ -1,18 +1,83 @@
 <!DOCTYPE html>
-<html>
-  <head>
-    <title>Chess Game Login</title>
-  </head>
-  <body>
-    <h1>Login</h1>
-    <form id="login-form" action="/login" method="post">
-      <label for="username">Username:</label>
-      <input type="text" id="username" name="username" required><br>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login Form</title>
+    <style>
+        body {
+            margin: 0;
+            font-family: 'Inter', sans-serif;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(#00ffcc, #ff00ff);
+        }
+    </style>
+</head>
+<body>
+  <script>
+    document.addEventListener('DOMContentLoaded', function () {
+        var form = document.createElement('form');
+        form.id = 'login-form';
+        form.action = '/login';
+        form.method = 'post';
 
-      <label for="password">Password:</label>
-      <input type="password" id="password" name="password" required><br>
+        var h3 = document.createElement("h3");
+        h3.textContent = "Invalid username/password combination";
+        h3.style.fontSize = '12px';
+        h3.style.color = 'red';
 
-      <input type="submit" value="Login">
-    </form>
-  </body>
+        var h2 = document.createElement("h2");
+        h2.textContent = "Login";
+        h2.style.fontSize = '30px';
+        document.body.appendChild(h2);
+        form.appendChild(document.createElement("br"));
+
+        const urlParams = new URLSearchParams(window.location.search);
+        const failed = urlParams.get('failed');
+
+        if (failed === 'true') {
+            document.body.appendChild(h3);
+        }
+
+        var usernameLabel = document.createElement('label');
+        usernameLabel.textContent = 'Username:';
+        form.appendChild(usernameLabel);
+
+        var usernameInput = document.createElement('input');
+        usernameInput.type = 'text';
+        usernameInput.id = 'username';
+        usernameInput.name = 'username';
+        usernameInput.required = true;
+        form.appendChild(usernameInput);
+
+        form.appendChild(document.createElement("br"));
+
+        var passwordLabel = document.createElement('label');
+        passwordLabel.textContent = 'Password: ';
+        form.appendChild(passwordLabel);
+
+        var passwordInput = document.createElement('input');
+        passwordInput.type = 'password';
+        passwordInput.id = 'password';
+        passwordInput.name = 'password';
+        passwordInput.required = true;
+        form.appendChild(passwordInput);
+
+        form.appendChild(document.createElement("br"));
+
+        var submitButton = document.createElement('button');
+        submitButton.type = 'submit';
+        submitButton.textContent = 'Login';
+        form.appendChild(submitButton);
+
+        document.body.appendChild(form);
+    });
+</script>
+
+</body>
 </html>

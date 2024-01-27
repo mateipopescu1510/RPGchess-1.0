@@ -17,3 +17,7 @@ export async function connectToDb() {
 export function getDb() {
     return db;
 }
+
+export async function getUser(username) {
+    return db.collection('Users').findOne({username: username});
+}

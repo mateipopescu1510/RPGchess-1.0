@@ -171,10 +171,10 @@
       }
     }
     function login() {
-      alert("Te rog mergi!");
+      fetch('/login').then(response => window.location.href = response.url);
     }
     function register() {
-      alert("Te rog si tu!");
+      fetch('/register').then(response => window.location.href = response.url);
     }
     </script>
   </body>
