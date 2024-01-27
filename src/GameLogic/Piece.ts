@@ -16,6 +16,8 @@ export class Piece {
     private totalXP: number;
     private moveCounter: number;
     private maxLevel: number;
+    private maxAbilityCapacity: number;
+    private maxCaptureMultiplier: number;
     private isMaxLevel: Boolean;
     private highlighted: Boolean;
 
@@ -28,7 +30,7 @@ export class Piece {
         level: number = 0,
         attacks: Array<[Direction, number]> = []
     ) {
-        
+
         this.side = side;
         this.type = type;
         this.initialSquare = initialSquare;
@@ -47,6 +49,8 @@ export class Piece {
                 this.maxLevel = Utils.PAWN_MAX_LEVEL;
                 this.possibleAbilities.push(...Utils.PAWN_ABILITIES);
                 this.possibleAbilities.push(...Utils.GENERIC_ABILITIES);
+                this.maxAbilityCapacity = Utils.PAWN_MAX_ABILITY_CAPACITY;
+                this.maxCaptureMultiplier = Utils.PAWN_MAX_CAPTURE_MULTIPLIER;
                 break;
             }
             case Type.BISHOP: {
@@ -57,6 +61,8 @@ export class Piece {
                 this.maxLevel = Utils.BISHOP_MAX_LEVEL;
                 this.possibleAbilities.push(...Utils.BISHOP_ABILITIES);
                 this.possibleAbilities.push(...Utils.GENERIC_ABILITIES);
+                this.maxAbilityCapacity = Utils.BISHOP_MAX_ABILITY_CAPACITY;
+                this.maxCaptureMultiplier = Utils.BISHOP_MAX_CAPTURE_MULTIPLIER;
                 break;
             }
             case Type.KNIGHT: {
@@ -67,6 +73,8 @@ export class Piece {
                 this.maxLevel = Utils.KNIGHT_MAX_LEVEL;
                 this.possibleAbilities.push(...Utils.KNIGHT_ABILITIES);
                 this.possibleAbilities.push(...Utils.GENERIC_ABILITIES);
+                this.maxAbilityCapacity = Utils.KNIGHT_MAX_ABILITY_CAPACITY;
+                this.maxCaptureMultiplier = Utils.KNIGHT_MAX_CAPTURE_MULTIPLIER;
                 break;
             }
             case Type.ROOK: {
@@ -77,6 +85,8 @@ export class Piece {
                 this.maxLevel = Utils.ROOK_MAX_LEVEL;
                 this.possibleAbilities.push(...Utils.ROOK_ABILITIES);
                 this.possibleAbilities.push(...Utils.GENERIC_ABILITIES);
+                this.maxAbilityCapacity = Utils.ROOK_MAX_ABILITY_CAPACITY;
+                this.maxCaptureMultiplier = Utils.ROOK_MAX_CAPTURE_MULTIPLIER;
                 break;
             }
             case Type.QUEEN: {
@@ -87,6 +97,8 @@ export class Piece {
                 this.maxLevel = Utils.QUEEN_MAX_LEVEL;
                 this.possibleAbilities.push(...Utils.QUEEN_ABILITIES);
                 this.possibleAbilities.push(...Utils.GENERIC_ABILITIES);
+                this.maxAbilityCapacity = Utils.QUEEN_MAX_ABILITY_CAPACITY;
+                this.maxCaptureMultiplier = Utils.QUEEN_MAX_CAPTURE_MULTIPLIER;
                 break;
             }
             case Type.KING: {
@@ -97,6 +109,8 @@ export class Piece {
                 this.maxLevel = Utils.KING_MAX_LEVEL;
                 this.possibleAbilities.push(...Utils.KING_ABILITIES);
                 this.possibleAbilities.push(...Utils.GENERIC_ABILITIES);
+                this.maxAbilityCapacity = Utils.KING_MAX_ABILITY_CAPACITY;
+                this.maxCaptureMultiplier = Utils.KING_MAX_CAPTURE_MULTIPLIER;
                 break;
             }
             default: {
@@ -106,6 +120,8 @@ export class Piece {
                 this.abilityCapacity = 0;
                 this.maxLevel = 0;
                 this.possibleAbilities = [];
+                this.maxAbilityCapacity = 0;
+                this.maxCaptureMultiplier = 0;
                 break;
             }
         }
@@ -293,7 +309,7 @@ export class Piece {
 
     //*ADD/REMOVE ABILITY
     addAbility(ability: Ability, timesUsed: number = 0): Boolean {
-        if (this.abilities.length === this.abilityCapacity && ability !== Ability.INCREASE_CAPACITY)
+        if (this.abilities.length === this.abilityCapacity && Utils.INSTANT_ABILITIES.indexOf(ability) === -1)
             return false;
         if (this.getAbilitiesIDs().indexOf(ability) !== -1 || this.possibleAbilities.indexOf(ability) === -1)
             return false;
@@ -304,10 +320,14 @@ export class Piece {
         switch (ability) {
             case Ability.INCREASE_CAPACITY: {
                 this.increaseAbilityCapacity();
+                if (this.abilityCapacity >= this.maxAbilityCapacity)
+                    this.possibleAbilities.splice(this.possibleAbilities.indexOf(ability), 1);
                 return true;
             }
             case Ability.INCREASE_CAPTURE_MULTIPLIER: {
                 this.increaseCaptureMultiplier();
+                if (this.captureMultiplier >= this.maxCaptureMultiplier)
+                    this.possibleAbilities.splice(this.possibleAbilities.indexOf(ability), 1);
                 return true;
             }
             case Ability.SWEEPER: {
@@ -370,14 +390,26 @@ export class Piece {
 
     //*POSSIBLE ABILITIES
     getPossibleAbilitiesIDs(): Ability[] {
-        if (this.abilities.length === this.abilityCapacity)
-            return [Ability.INCREASE_CAPACITY];
-        return this.possibleAbilities;
+        if (this.abilities.length < this.abilityCapacity)
+            return this.possibleAbilities;
+
+        let currentPossible: Ability[] = [Ability.NONE];
+        if (this.abilityCapacity < this.maxAbilityCapacity)
+            currentPossible.push(Ability.INCREASE_CAPACITY);
+        if (this.captureMultiplier < this.maxCaptureMultiplier)
+            currentPossible.push(Ability.INCREASE_CAPTURE_MULTIPLIER);
+        return currentPossible;
     }
     getPossibleAbilitiesNames(): string[] {
-        if (this.abilities.length === this.abilityCapacity)
-            return [Ability[Ability.INCREASE_CAPACITY]];
-        return this.possibleAbilities.map(abilityID => Ability[abilityID]);
+        if (this.abilities.length < this.abilityCapacity)
+            return this.possibleAbilities.map(abilityID => Ability[abilityID]);
+
+        let currentPossible: Ability[] = [Ability.NONE];
+        if (this.abilityCapacity < this.maxAbilityCapacity)
+            currentPossible.push(Ability.INCREASE_CAPACITY);
+        if (this.captureMultiplier < this.maxCaptureMultiplier)
+            currentPossible.push(Ability.INCREASE_CAPTURE_MULTIPLIER);
+        return currentPossible.map(ability => Ability[ability]);
     }
 
     //*XP
@@ -388,6 +420,8 @@ export class Piece {
         return this.XP;
     }
     addXP(capturedXP: number): Boolean {
+        if (this.isMaxLevel)
+            return false;
         this.XP += Utils.PER_MOVE_XP + Math.floor(this.captureMultiplier * capturedXP);
         this.totalXP += Utils.PER_MOVE_XP + Math.floor(this.captureMultiplier * capturedXP);
 
@@ -421,6 +455,9 @@ export class Piece {
         this.XP -= this.levelUpXP[this.level];
         this.level++;
 
+        if (this.level === this.maxLevel)
+            this.isMaxLevel = true;
+
         return true;
     }
 
@@ -445,6 +482,16 @@ export class Piece {
     //*MAX LEVEL
     reachedMaxLevel(): Boolean {
         return this.isMaxLevel;
+    }
+
+    //*MAX ABILITY CAPACITY
+    getMaxAbilityCapacity(): number {
+        return this.maxAbilityCapacity;
+    }
+
+    //*MAX CAPTURE MULTIPLIER
+    getMaxCaptureMultiplier(): number {
+        return this.maxCaptureMultiplier;
     }
 
     //*HIGHLIGHT

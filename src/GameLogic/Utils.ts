@@ -21,6 +21,13 @@ export const ROOK_CAPTURE_MULTIPLIER = 0.3;
 export const QUEEN_CAPTURE_MULTIPLIER = 0.2;
 export const KING_CAPTURE_MULTIPLIER = 0.6;
 
+export const PAWN_MAX_CAPTURE_MULTIPLIER = 2;
+export const BISHOP_MAX_CAPTURE_MULTIPLIER = 1.5;
+export const KNIGHT_MAX_CAPTURE_MULTIPLIER = 1.5;
+export const ROOK_MAX_CAPTURE_MULTIPLIER = 1.3;
+export const QUEEN_MAX_CAPTURE_MULTIPLIER = 1;
+export const KING_MAX_CAPTURE_MULTIPLIER = 1.7;
+
 export const PAWN_DEFAULT_ABILITY_CAPACITY = 2;
 export const BISHOP_DEFAULT_ABILITY_CAPACITY = 2;
 export const KNIGHT_DEFAULT_ABILITY_CAPACITY = 1;
@@ -35,7 +42,7 @@ export const ROOK_MAX_LEVEL = 10;
 export const QUEEN_MAX_LEVEL = 10;
 export const KING_MAX_LEVEL = 10;
 
-export const PER_MOVE_XP: number = 10;
+export const PER_MOVE_XP: number = 5;
 export const ABILITY_MAX_TIMES_USED: number = 5;
 export const PASSIVE_ABILITY_MAX_TIMES_USED: number = 5;
 
@@ -108,7 +115,8 @@ export enum Ability {
     ON_CAMEL = 705, // can also move like a camel
 }
 
-export const GENERIC_ABILITIES: Ability[] = [Ability.INCREASE_CAPACITY, Ability.INCREASE_CAPTURE_MULTIPLIER, Ability.SHIELD];
+export const GENERIC_ABILITIES: Ability[] = [Ability.NONE, Ability.INCREASE_CAPACITY, Ability.INCREASE_CAPTURE_MULTIPLIER]; //SHIELD is WIP
+export const INSTANT_ABILITIES: Ability[] = [Ability.NONE, Ability.INCREASE_CAPACITY, Ability.INCREASE_CAPTURE_MULTIPLIER];
 export const PASSIVE_ABILITIES: Ability[] = [Ability.SMOLDERING, Ability.SWEEPER, Ability.LEAPER, Ability.BOOST_ADJACENT_PIECES];
 
 export const PAWN_ABILITIES: Ability[] = [Ability.SCOUT, Ability.QUANTUM_TUNNELING, Ability.BACKWARDS];
@@ -117,6 +125,13 @@ export const KNIGHT_ABILITIES: Ability[] = [Ability.SMOLDERING, Ability.CAMEL, A
 export const ROOK_ABILITIES: Ability[] = [Ability.HAS_PAWN, Ability.CHANCELLOR];
 export const QUEEN_ABILITIES: Ability[] = [Ability.SWEEPER, Ability.BOOST_ADJACENT_PIECES];
 export const KING_ABILITIES: Ability[] = [Ability.SKIP, Ability.ON_HORSE, Ability.ON_CAMEL];
+
+export const PAWN_MAX_ABILITY_CAPACITY = PAWN_ABILITIES.length + GENERIC_ABILITIES.length - INSTANT_ABILITIES.length;
+export const BISHOP_MAX_ABILITY_CAPACITY = BISHOP_ABILITIES.length + GENERIC_ABILITIES.length - INSTANT_ABILITIES.length;
+export const KNIGHT_MAX_ABILITY_CAPACITY = KNIGHT_ABILITIES.length + GENERIC_ABILITIES.length - INSTANT_ABILITIES.length;
+export const ROOK_MAX_ABILITY_CAPACITY = ROOK_ABILITIES.length + GENERIC_ABILITIES.length - INSTANT_ABILITIES.length;
+export const QUEEN_MAX_ABILITY_CAPACITY = QUEEN_ABILITIES.length + GENERIC_ABILITIES.length - INSTANT_ABILITIES.length;
+export const KING_MAX_ABILITY_CAPACITY = KING_ABILITIES.length + GENERIC_ABILITIES.length - INSTANT_ABILITIES.length;
 
 export function coordinateInList(coordinate: [number, number], list: Array<[number, number, Ability]>): number {
     //Returns index of the coordinate if it is in the list
@@ -229,6 +244,13 @@ export default {
     QUEEN_CAPTURE_MULTIPLIER,
     KING_CAPTURE_MULTIPLIER,
 
+    PAWN_MAX_CAPTURE_MULTIPLIER,
+    BISHOP_MAX_CAPTURE_MULTIPLIER,
+    KNIGHT_MAX_CAPTURE_MULTIPLIER,
+    ROOK_MAX_CAPTURE_MULTIPLIER,
+    QUEEN_MAX_CAPTURE_MULTIPLIER,
+    KING_MAX_CAPTURE_MULTIPLIER,
+
     PAWN_DEFAULT_ABILITY_CAPACITY,
     BISHOP_DEFAULT_ABILITY_CAPACITY,
     KNIGHT_DEFAULT_ABILITY_CAPACITY,
@@ -254,13 +276,22 @@ export default {
     Ability,
 
     GENERIC_ABILITIES,
+    INSTANT_ABILITIES,
     PASSIVE_ABILITIES,
+
     PAWN_ABILITIES,
     BISHOP_ABILITIES,
     KNIGHT_ABILITIES,
     ROOK_ABILITIES,
     QUEEN_ABILITIES,
     KING_ABILITIES,
+
+    PAWN_MAX_ABILITY_CAPACITY,
+    BISHOP_MAX_ABILITY_CAPACITY,
+    KNIGHT_MAX_ABILITY_CAPACITY,
+    ROOK_MAX_ABILITY_CAPACITY,
+    QUEEN_MAX_ABILITY_CAPACITY,
+    KING_MAX_ABILITY_CAPACITY,
 
     coordinateInList,
     oppositeSidePiece,

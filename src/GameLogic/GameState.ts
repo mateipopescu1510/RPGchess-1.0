@@ -42,6 +42,8 @@ export class GameState {
 
     levelUp(abilityName: string): Boolean {
         let [row, column]: [number, number] = this.board.getLevelUpCoordinates();
+        if (row === -1 || column === -1)
+            return true;
         let piece: Piece = this.board.getBoardSetup()[row][column];
         let ability: Ability = Ability[abilityName];
 

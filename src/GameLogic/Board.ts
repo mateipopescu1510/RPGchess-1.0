@@ -197,7 +197,8 @@ export class Board {
 
         this.boardSetup[toRow][toColumn] = this.boardSetup[fromRow][fromColumn]; //Move the piece to target square
 
-        this.mustLevelUpCoordinates = this.boardSetup[toRow][toColumn].addXP(capturedPieceXP) ? [toRow, toColumn] : [-1, -1];
+        if (this.boardSetup[toRow][toColumn].getCanLevelUp())
+            this.mustLevelUpCoordinates = this.boardSetup[toRow][toColumn].addXP(capturedPieceXP) ? [toRow, toColumn] : [-1, -1];
 
         if (fromRow !== toRow || fromColumn !== toColumn)
             this.boardSetup[fromRow][fromColumn] = new Piece(); //Create empty square on the square the piece moved from
