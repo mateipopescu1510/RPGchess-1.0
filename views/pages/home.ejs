@@ -94,22 +94,6 @@
     var insanityRPGBtn;
     var defaultBtnColor;
 
-    // const urlParams = new URLSearchParams(window.location.search);
-    // const user = urlParams.get('user');
-
-    // console.log("cefaci");
-
-    // if (user === 'true') {
-    //   console.log("Care-i treaba?");
-    //   document.getElementsByClassName('home-btn-group')[0].style.visibility = hidden;
-    //   document.getElementsByClassName('home-main-body')[0].style.visibility = visible;
-    // }
-    // else {
-    //   console.log("Nu e treaba!");
-    //   document.getElementsByClassName('home-btn-group')[0].style.visibility = visible;
-    //   document.getElementsByClassName('home-main-body')[0].style.visibility = hidden;
-    // }
-
     window.onload = function() {
       classicRPGBtn = document.getElementById("joinClassicRPG")
       classicChessBtn = document.getElementById("joinClassicChess");
@@ -117,6 +101,20 @@
       loginBtn = document.getElementById("login");
       registerBtn = document.getElementById("register");
       defaultBtnColor = classicRPGBtn.style.backgroundColor;
+
+      const urlParams = new URLSearchParams(window.location.search);
+      const user = urlParams.get('user');
+
+      if (user === 'true') {
+        console.log("Care-i treaba?");
+        document.getElementsByClassName('home-btn-group')[0].style.visibility = 'hidden';
+        document.getElementsByClassName('home-main-body')[0].style.visibility = 'visible';
+      }
+      else {
+        console.log("Nu e treaba!");
+        document.getElementsByClassName('home-btn-group')[0].style.visibility = 'visible';
+        document.getElementsByClassName('home-main-body')[0].style.visibility = 'hidden';
+      }
 
       classicRPGBtn.addEventListener("click", joinClassicRPG);
       classicChessBtn.addEventListener("click", joinClassicChess);
