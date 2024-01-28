@@ -68,6 +68,7 @@
     const gameScene = new Phaser.Game(config);    // BUG: canvas size is set according to visible screen size, not the entire screen size 
     let boardSquareSprites = [];   // 2D array of sprites representing the board squares
     let pieceSprites = [];    // 2D array of sprites representing the pieces
+    let validMovesSprites = []; //2D array of sprites representing the valid moves
 
     function preload() {
       this.load.image('backgroundGradient', '../images/backgroundGradient.avif');
@@ -85,6 +86,7 @@
       this.load.image('blackBishop', '../images/blackBishop.png');
       this.load.image('blackQueen', '../images/blackQueen.png');
       this.load.image('blackKing', '../images/blackKing.png');
+      this.load.image('move', '../images/move.png');
 
     }
 
@@ -94,8 +96,10 @@
       background.setScale(this.sys.game.canvas.width / background.width, this.sys.game.canvas.height / background.height);
 
       let squareImageSize = this.textures.get('blackSquare').getSourceImage();
+      let moveImageSize = this.textures.get('move').getSourceImage();
       let squareSize = 0.8 * window.innerHeight / board.rows;     // vertical size of board always coveres 80% of the screen height
       let squareScale = squareSize / squareImageSize.width;
+      let moveScale = squareSize / moveImageSize.width / 2;
       let boardPosition = { x: (window.innerWidth - squareSize * board.columns) / 2, y: (window.innerHeight - squareSize * board.rows) / 2 }; // top left corner of the board
 
 
@@ -214,10 +218,14 @@
           else if (selectedPiece.type === "b") pieceName = "Bishop";
           else if (selectedPiece.type === "q") pieceName = "Queen";
           else if (selectedPiece.type === "k") pieceName = "King";
+
+
           selectedPieceImage.setTexture(selectedPiece.side.toLowerCase() + pieceName);
           abilityCapacity.setText("Ability capacity: " + selectedPiece.abilityCapacity);
           maxLevel.setText('Max level: ' + selectedPiece.maxLevel);
           captureMultiplier.setText("Capture multiplier: " + selectedPiece.captureMultiplier);
+
+
           let currCapacity = selectedPiece.getAbilityCapacity();
           for (let text of textAbility)
             text.destroy();
@@ -226,18 +234,40 @@
             textAbility.push(this.add.text(statsTab.x + 10, selectedPieceImage.y + squareSize / 2 + 110 + i * 30, 'NONE', { fontFamily: 'Arial', fontSize: 20, color: '#000000' }));
           textLevel.setText('Level: ' + (selectedPiece.level + 1));
           textXP.setText('XP: ' + selectedPiece.XP + '/' + levelUpXp[pieceName.toUpperCase() + '_LEVELUP_XP'][selectedPiece.level]);
+
+
           let pieceAbilities = selectedPiece.getAbilities();
           for (let idx in pieceAbilities) {
             let currAbility = pieceAbilities[idx];
             textAbility[idx].setText(allAbilities[currAbility[0]] + ": " + currAbility[1] + " uses remaining");
           }
-
           for (let i = selectedPiece.abilities.length; i < textAbility.length; i++)
             textAbility[i].setText('NONE');
+          
+          if (this.draggedPiece.side === playerPerspective){
+            
+            
+            let validMoves = board.validMoves([this.draggedPiece.row, this.draggedPiece.col]);
+            for (let move of validMoves){
+              let moveSprite;
+              if (playerPerspective === "WHITE")
+                moveSprite = this.add.sprite(boardSquareSprites[move[0]][move[1]].x, boardSquareSprites[move[0]][move[1]].y, 'move');
+              else
+                moveSprite = this.add.sprite(boardSquareSprites[board.rows - move[0] - 1][board.columns - move[1] - 1].x, boardSquareSprites[board.rows - move[0] - 1][board.columns - move[1] - 1].y, 'move');
+              moveSprite.setOrigin(-0.5, -0.5);
+              console.log("test in generare moves: ");
+              console.log(moveSprite);
+              moveSprite.setScale(moveScale);
+              console.log(moveSprite);
+              moveSprite.row = move[0];
+              moveSprite.col = move[1];
+              //moveSprite.x = boardPosition.x + col * squareSize; //test what happens when deleted
+              //moveSprite.y = boardPosition.y + row * squareSize;
+              validMovesSprites.push(moveSprite);
+            }
+          }
 
         }
-
-
       }, this);
 
       this.input.on("pointermove", (pointer) => {
@@ -248,6 +278,9 @@
       }, this);
 
       this.input.on("pointerup", (pointer) => {
+        for (let moveSprite of validMovesSprites)
+              moveSprite.destroy();
+            validMovesSprites.length = 0;
         if (this.draggedPiece != undefined && this.draggedPiece.side === playerPerspective) {
           let currentTurn = game.getGameState().getTurn();  // returns 0 for white, 1 for black
           let currentTurnColor = currentTurn === 0 ? "WHITE" : "BLACK";
@@ -352,6 +385,9 @@
             captureMultiplier.setText("Capture multiplier: " + selectedPiece.captureMultiplier);
             //console.log("textAbility after:");
             //console.log(textAbility);
+
+
+            
           }
 
           if (gameState.checkmate()) {
