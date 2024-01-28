@@ -422,7 +422,7 @@ export class Board {
             side === Side.BLACK && row !== this.rows - 1)
             return false;
 
-        this.boardSetup[row][column] = new Piece(Side.WHITE, Type.QUEEN, [row, column], true);
+        this.boardSetup[row][column] = new Piece(side, Type.QUEEN, [row, column], true);
 
         return true;
     }
