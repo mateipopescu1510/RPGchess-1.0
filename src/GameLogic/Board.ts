@@ -207,8 +207,10 @@ export class Board {
             this.mustLevelUpCoordinates = this.boardSetup[toRow][toColumn].addXP(capturedPieceXP) ? [toRow, toColumn] : [-1, -1];
 
         //TODO check for pawn promotion
-        if (this.checkPawnPromotion([toRow, toColumn]))
+        if (this.checkPawnPromotion([toRow, toColumn])){
             this.mustLevelUpCoordinates = [-1, -1];
+        }
+            
 
         if (this.boardSetup[toRow][toColumn].getType() === Type.KING)
             this.boardSetup[toRow][toColumn].getSide() === Side.WHITE ? this.whiteKingPosition = [toRow, toColumn] : this.blackKingPosition = [toRow, toColumn];

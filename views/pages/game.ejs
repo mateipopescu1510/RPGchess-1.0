@@ -221,8 +221,6 @@
           textLevel.setText('Level: ' + (selectedPiece.level + 1));
           textXP.setText('XP: ' + selectedPiece.XP + '/' + levelUpXp[pieceName.toUpperCase() + '_LEVELUP_XP'][selectedPiece.level]);
           let pieceAbilities = selectedPiece.abilities;
-          console.log("current piece abilities: ");
-          console.log(pieceAbilities);
           for (let idx in pieceAbilities) {
             let currAbility = pieceAbilities[idx];
             textAbility[idx].setText(allAbilities[currAbility[0]]);
@@ -230,8 +228,6 @@
 
           for (let i = selectedPiece.abilities.length; i < textAbility.length; i++)
             textAbility[i].setText('NONE');
-
-
 
         }
 
@@ -303,7 +299,6 @@
           if (this.draggedPiece != undefined)  // update stats tab
           {
             let selectedPiece = board.boardSetup[this.draggedPiece.row][this.draggedPiece.col];
-
             let pieceName = ".";
             if (selectedPiece.type === "p") pieceName = "Pawn";
             else if (selectedPiece.type === "r") pieceName = "Rook";
@@ -330,7 +325,7 @@
                 });
               }
             }
-
+            
             textLevel.setText('Level: ' + (selectedPiece.level + 1));
             textXP.setText('XP: ' + selectedPiece.XP + '/' + levelUpXp[pieceName.toUpperCase() + '_LEVELUP_XP'][selectedPiece.level]);
 
@@ -339,14 +334,15 @@
               let currAbility = pieceAbilities[idx];
               textAbility[idx].setText(allAbilities[currAbility[0]]);
             }
-            console.log("textAbility before:");
-            console.log(textAbility);
+            //console.log("textAbility before:");
+            //console.log(textAbility);
             for (let i = selectedPiece.abilities.size; i < textAbility.length; i++)
               textAbility[i].setText('CUCU');
 
+            this.draggedPiece.setTexture(selectedPiece.side.toLowerCase() + pieceName);
             selectedPieceImage.setTexture(selectedPiece.side.toLowerCase() + pieceName);
-            console.log("textAbility after:");
-            console.log(textAbility);
+            //console.log("textAbility after:");
+            //console.log(textAbility);
           }
 
           if (gameState.checkmate()) {
@@ -355,6 +351,7 @@
             return;
           }
 
+              
           this.draggedPiece = undefined;
           this.startingSquare = undefined;
 
@@ -383,7 +380,20 @@
         }
         movedPiece.row = move.to[0];
         movedPiece.col = move.to[1];
+
+        
+
+        
         gameState.movePiece(move.from, move.to);
+        let selectedPiece = board.boardSetup[move.to[0]][move.to[1]];
+        let pieceName = ".";
+        if (selectedPiece.type === "p") pieceName = "Pawn";
+          else if (selectedPiece.type === "r") pieceName = "Rook";
+          else if (selectedPiece.type === "n") pieceName = "Knight";
+          else if (selectedPiece.type === "b") pieceName = "Bishop";
+          else if (selectedPiece.type === "q") pieceName = "Queen";
+          else if (selectedPiece.type === "k") pieceName = "King";
+        movedPiece.setTexture(selectedPiece.side.toLowerCase() + pieceName);
         if (gameState.checkmate()) {
           let winner = gameState.getTurn() === 0 ? "Black" : "White";
           let winnerText = gameScene.scene.scenes[0].add.text(returnButton.x, returnButton.y + returnButton.height + 50, winner + " wins!", { fontFamily: 'Arial', fontSize: 24, color: '#000000' });
