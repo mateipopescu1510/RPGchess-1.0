@@ -281,7 +281,6 @@ export class Board {
         if (Utils.isQueen(this.boardSetup[row][column]) &&
             this.getLastMove()[2].hasAbility(Ability.SMOLDERING))
             return true;
-
         return false;
     }
 
