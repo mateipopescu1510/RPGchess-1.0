@@ -1,20 +1,106 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>Chess Game Registration</title>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login Form</title>
+    <style>
+        body {
+            margin: 0;
+            font-family: 'Inter', sans-serif;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background : linear-gradient(#ec9b83,#e39396,#d889ad,#d081bd,#c97bcd,#a98ace,#9595cd,#869ecc,#72aacb,#51bcc9);
+        }
+    </style>
 </head>
 <body>
-    <h1>Chess Game Registration</h1>
-    <form action="/register" method="post">
-        <label for="nickname">Nickname:</label>
-        <input type="text" id="nickname" name="nickname" required><br>
-        <label for="username">Username:</label>
-        <input type="text" id="username" name="username" required><br>
-        <label for="email">Email:</label>
-        <input type="email" id="email" name="email" required><br>
-        <label for="password">Password:</label>
-        <input type="password" id="password" name="password" required><br>
-        <input type="submit" value="Register">
-    </form>
+  <script>
+    document.addEventListener('DOMContentLoaded', function () {
+    var form = document.createElement('form');
+    form.id = 'register-form';
+    form.action = '/register';
+    form.method = 'post';
+
+    var h3 = document.createElement("h3");
+    h3.textContent = "This email address is already taken!";
+    h3.style.fontSize = '12px';
+    h3.style.color = 'red';
+
+    var h4 = document.createElement("h4");
+    h4.textContent = "This username is already taken!";
+    h4.style.fontSize = '12px';
+    h4.style.color = 'red';
+
+    var h2 = document.createElement("h2");
+    h2.textContent = "Register";
+    h2.style.fontSize = '30px';
+    document.body.appendChild(h2);
+    
+
+    const urlParams = new URLSearchParams(window.location.search);
+    const validationError = urlParams.get('validationError');
+
+    if (validationError === '2') {
+        document.body.appendChild(h3);
+    }
+    if (validationError === '3') {
+        document.body.appendChild(h4);
+   }
+
+    var emailLabel = document.createElement('label');
+    emailLabel.textContent = 'Email:';
+    emailLabel.style.marginRight = '34px';
+    form.appendChild(emailLabel);
+
+    var emailInput = document.createElement('input');
+    emailInput.type = 'email'; 
+    emailInput.id = 'email'; 
+    emailInput.name = 'email'; 
+    emailInput.required = true; 
+    form.appendChild(emailInput);
+
+    form.appendChild(document.createElement("br"));
+
+    var usernameLabel = document.createElement('label');
+    usernameLabel.textContent = 'Username:';
+    form.appendChild(usernameLabel);
+
+    var usernameInput = document.createElement('input');
+    usernameInput.type = 'text';
+    usernameInput.id = 'username';
+    usernameInput.name = 'username';
+    usernameInput.required = true;
+    form.appendChild(usernameInput);
+
+    form.appendChild(document.createElement("br"));
+
+    var passwordLabel = document.createElement('label');
+    passwordLabel.textContent = 'Password: ';
+    form.appendChild(passwordLabel);
+
+    var passwordInput = document.createElement('input');
+    passwordInput.type = 'password';
+    passwordInput.id = 'password';
+    passwordInput.name = 'password';
+    passwordInput.required = true;
+    form.appendChild(passwordInput);
+
+    form.appendChild(document.createElement("br"));
+
+    var submitButton = document.createElement('button');
+    submitButton.type = 'submit';
+    submitButton.textContent = 'Register';
+    form.appendChild(submitButton);
+
+    document.body.appendChild(form);
+});
+
+</script>
+
 </body>
 </html>

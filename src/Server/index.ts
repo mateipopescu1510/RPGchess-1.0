@@ -7,6 +7,7 @@ import cookieParser from 'cookie-parser';
 
 import * as mongodb from './mongoDB';
 import * as login from './loginValidation';
+import * as register from './registerValidation';
 import * as gameSocket from './gameSocket';
 import * as matchmaking from './matchmaking';
 import { gamesInProgress } from "./gameSocket";
@@ -22,19 +23,18 @@ const io = new socketIO.Server(server)
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 
-// set static files folder
+// Set static files folder
 app.use(express.static('resources'));
 
+//  Connect to database server
+const db = mongodb.connectToDb().catch((err) => { console.log(err) });
 
-mongodb.connectToDb().catch((err) => { console.log(err) });
-
-// create virtual game rooms and handle communications
+// Create virtual game rooms and handle communications
 gameSocket.handleGames(io);  
 
 app.get('/', (req, res) => {
     res.render('pages/home');
 });
-
 
 app.get('/boardstate', (req, res) => {
     let gameId = req.query.gameId as string;
@@ -54,7 +54,6 @@ app.get('/boardstate', (req, res) => {
     else
         res.send("Game not found");
 });
-
 
 app.get('/game/:gameId', (req, res) => {
     let gameId = req.params.gameId;
@@ -87,31 +86,45 @@ app.get('/leaveQueue', (req, res) => {
     matchmaking.leaveQueue(userId, gamemode);
 });
 
-app.get('/register', (req, res) => {
-    res.render('pages/register');
-});
-
-app.post('/register', (req, res) => {
-    const playersCollection = mongodb.getDb().collection('players');
-
-    const { nickname, username, email, password } = req.body;
-    const newPlayer = { nickname: nickname, username: username, email: email, password: password, games_won: 0, games_lost: 0, rating: 1000, friend_list: [], game_history: [], description: "", creation_date: new Date() };
-    playersCollection.insertOne(newPlayer);
-
-    res.redirect('/game');
-});
-
 app.get('/login', (req, res) => {
     res.render('pages/login');
 })
 
 app.post('/login', async (req, res) => {
     const { username, password } = req.body;
-    if (await login.isValidCredentials(username, password))
-      res.redirect('/game');
-    else 
-      res.send("Invalid account.");
-  });
+
+    if (await login.isValidCredentials(username, password)) {
+        res.redirect('/?user=true');
+    }
+    else {
+        res.redirect('/login?failed=true');
+    }
+});
+
+app.get('/register', (req, res) => {
+    res.render('pages/register');
+});
+
+app.post('/register', async (req, res) => {
+    const users = mongodb.getDb().collection('Users');
+
+    const { username, email, password } = req.body;
+    const newUser = { username: username, email: email, password: password, games_won: 0, games_lost: 0, rating: 1000, friends: [], games: [], creation_date: new Date() };
+
+    let isValid = await register.validations(username, email);
+
+    if (isValid == register.GOOD_CREDENTIALS) {
+        users.insertOne(newUser);
+
+        res.render('pages/home');
+    }
+    else if (isValid == register.EXISTING_EMAIL) {
+        res.redirect('/register?validationError=' + register.EXISTING_EMAIL);
+    }
+    else {
+        res.redirect('/register?validationError=' + register.EXISTING_USERNAME);
+    }
+});
 
 let port = 3000;
 server.listen(port, '0.0.0.0', () => {

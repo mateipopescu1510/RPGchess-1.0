@@ -25,7 +25,6 @@
         line-height: 1.15;
         color: var(--dl-color-gray-black);
         background-color: var(--dl-color-gray-white);
-
       }
     </style>
     <link
@@ -50,8 +49,8 @@
               class="home-image"
             />
             <div class="home-btn-group">
-              <button class="home-login button">Login</button>
-              <button class="home-register button">Register</button>
+              <button id="login" class="button">Login</button>
+              <button id="register" class="button">Register</button>
             </div>
           </header>
           <div class="home-main-body">
@@ -95,18 +94,33 @@
     var insanityRPGBtn;
     var defaultBtnColor;
 
-
     window.onload = function() {
       classicRPGBtn = document.getElementById("joinClassicRPG")
       classicChessBtn = document.getElementById("joinClassicChess");
       insanityRPGBtn = document.getElementById("joinInsanityRPG");
+      loginBtn = document.getElementById("login");
+      registerBtn = document.getElementById("register");
       defaultBtnColor = classicRPGBtn.style.backgroundColor;
 
+      const urlParams = new URLSearchParams(window.location.search);
+      const user = urlParams.get('user');
+
+      if (user === 'true') {
+        console.log("Care-i treaba?");
+        document.getElementsByClassName('home-btn-group')[0].style.visibility = 'hidden';
+        document.getElementsByClassName('home-main-body')[0].style.visibility = 'visible';
+      }
+      else {
+        console.log("Nu e treaba!");
+        document.getElementsByClassName('home-btn-group')[0].style.visibility = 'visible';
+        document.getElementsByClassName('home-main-body')[0].style.visibility = 'hidden';
+      }
 
       classicRPGBtn.addEventListener("click", joinClassicRPG);
       classicChessBtn.addEventListener("click", joinClassicChess);
       insanityRPGBtn.addEventListener("click", joinInsanityRPG);
-
+      loginBtn.addEventListener("click", login);
+      registerBtn.addEventListener("click", register);
     }
 		function joinClassicRPG()
     {
@@ -167,6 +181,12 @@
         classicRPGBtn.disabled = true;
         fetch('/joinQueue?mode=insanityrpg').then(response => window.location.href = response.url);
       }
+    }
+    function login() {
+      fetch('/login').then(response => window.location.href = response.url);
+    }
+    function register() {
+      fetch('/register').then(response => window.location.href = response.url);
     }
     </script>
   </body>

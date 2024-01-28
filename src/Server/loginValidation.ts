@@ -1,11 +1,12 @@
 import * as mongodb from './mongoDB';
 
-export async function isValidCredentials(name : string, password : string){
-    let db = mongodb.getDb();
-    let playersCollection = db.collection('players');
-    console.log(name + " " + password);
-    let existingPlayer = await playersCollection.findOne({username: name});
-    if(existingPlayer && existingPlayer.password == password)
+export async function isValidCredentials(name: string, password: string) {
+    let users = mongodb.getDb().collection('Users');
+
+    let existingUser = await users.findOne({username: name});
+
+    if(existingUser && existingUser.password == password)
         return true;
+
     return false;
 }
