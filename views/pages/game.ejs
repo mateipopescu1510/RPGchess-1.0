@@ -162,7 +162,7 @@
       graphics.fillStyle(fillColor);
       graphics.lineStyle(2, borderColor);
 
-      let statsTab = { x: boardPosition.x + board.columns * squareSize + 50, y: boardPosition.y, width: squareSize * 3, height: board.rows * squareSize };
+      let statsTab = { x: boardPosition.x + board.columns * squareSize + 50, y: boardPosition.y, width: window.innerWidth - (boardPosition.x + board.columns * squareSize + 50) - 10, height: board.rows * squareSize };
       graphics.fillRoundedRect(statsTab.x, statsTab.y, statsTab.width, statsTab.height, radius);
       graphics.strokeRoundedRect(statsTab.x, statsTab.y, statsTab.width, statsTab.height, radius);
 
@@ -178,6 +178,9 @@
       let textAbility = [];
       for (let i = 0; i < data.KING_DEFAULT_ABILITY_CAPACITY; i++)
         textAbility.push(this.add.text(statsTab.x + 10, selectedPieceImage.y + squareSize / 2 + 110 + i * 30, 'NONE', { fontFamily: 'Arial', fontSize: 20, color: '#000000' }));
+      let abilityCapacity = this.add.text(statsTab.x + 10, statsTab.y + statsTab.height-70, 'Ability capacity: ' + data.KING_DEFAULT_ABILITY_CAPACITY, { fontFamily: 'Arial', fontSize: 20, color: '#000000' });
+      let maxLevel = this.add.text(statsTab.x + 10, statsTab.y + statsTab.height-50, 'Max level: ' + data.KING_MAX_LEVEL, { fontFamily: 'Arial', fontSize: 20, color: '#000000' });
+      let captureMultiplier = this.add.text(statsTab.x + 10, statsTab.y + statsTab.height-30, 'Capture multiplier: ' + data.KING_CAPTURE_MULTIPLIER, { fontFamily: 'Arial', fontSize: 20, color: '#000000' });
 
       // return to menu button
 
@@ -212,6 +215,9 @@
           else if (selectedPiece.type === "q") pieceName = "Queen";
           else if (selectedPiece.type === "k") pieceName = "King";
           selectedPieceImage.setTexture(selectedPiece.side.toLowerCase() + pieceName);
+          abilityCapacity.setText("Ability capacity: " + selectedPiece.abilityCapacity);
+          maxLevel.setText('Max level: ' + selectedPiece.maxLevel);
+          captureMultiplier.setText("Capture multiplier: " + selectedPiece.captureMultiplier);
           let currCapacity = selectedPiece.getAbilityCapacity();
           for (let text of textAbility)
             text.destroy();
@@ -220,10 +226,10 @@
             textAbility.push(this.add.text(statsTab.x + 10, selectedPieceImage.y + squareSize / 2 + 110 + i * 30, 'NONE', { fontFamily: 'Arial', fontSize: 20, color: '#000000' }));
           textLevel.setText('Level: ' + (selectedPiece.level + 1));
           textXP.setText('XP: ' + selectedPiece.XP + '/' + levelUpXp[pieceName.toUpperCase() + '_LEVELUP_XP'][selectedPiece.level]);
-          let pieceAbilities = selectedPiece.abilities;
+          let pieceAbilities = selectedPiece.getAbilities();
           for (let idx in pieceAbilities) {
             let currAbility = pieceAbilities[idx];
-            textAbility[idx].setText(allAbilities[currAbility[0]]);
+            textAbility[idx].setText(allAbilities[currAbility[0]] + ": " + currAbility[1] + " uses remaining");
           }
 
           for (let i = selectedPiece.abilities.length; i < textAbility.length; i++)
@@ -332,7 +338,7 @@
             let pieceAbilities = selectedPiece.abilities;
             for (let idx in pieceAbilities) {
               let currAbility = pieceAbilities[idx];
-              textAbility[idx].setText(allAbilities[currAbility[0]]);
+              textAbility[idx].setText(allAbilities[currAbility[0]] + ": " + currAbility[1] + " uses remaining");
             }
             //console.log("textAbility before:");
             //console.log(textAbility);
@@ -341,6 +347,9 @@
 
             this.draggedPiece.setTexture(selectedPiece.side.toLowerCase() + pieceName);
             selectedPieceImage.setTexture(selectedPiece.side.toLowerCase() + pieceName);
+            abilityCapacity.setText("Ability capacity: " + selectedPiece.abilityCapacity);
+            maxLevel.setText('Max level: ' + selectedPiece.maxLevel);
+            captureMultiplier.setText("Capture multiplier: " + selectedPiece.captureMultiplier);
             //console.log("textAbility after:");
             //console.log(textAbility);
           }
