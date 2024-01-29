@@ -105,14 +105,14 @@
       const urlParams = new URLSearchParams(window.location.search);
       const user = urlParams.get('user');
 
-      // if (user === 'true') {
-      //   document.getElementsByClassName('home-btn-group')[0].style.visibility = 'hidden';
-      //   document.getElementsByClassName('home-main-body')[0].style.visibility = 'visible';
-      // }
-      // else {
-      //   document.getElementsByClassName('home-btn-group')[0].style.visibility = 'visible';
-      //   document.getElementsByClassName('home-main-body')[0].style.visibility = 'hidden';
-      // }
+      if (user === 'true') {
+        document.getElementsByClassName('home-btn-group')[0].style.visibility = 'hidden';
+        document.getElementsByClassName('home-main-body')[0].style.visibility = 'visible';
+      }
+      else {
+        document.getElementsByClassName('home-btn-group')[0].style.visibility = 'visible';
+        document.getElementsByClassName('home-main-body')[0].style.visibility = 'hidden';
+      }
 
       classicRPGBtn.addEventListener("click", joinClassicRPG);
       classicChessBtn.addEventListener("click", joinClassicChess);
